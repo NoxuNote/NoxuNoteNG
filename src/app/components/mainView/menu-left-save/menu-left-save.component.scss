@@ -104,7 +104,7 @@ input#menuGaucheSauverInput {
 }
 
 .formSave {
-    margin: 0
+    margin: 0;
 }
 
 .savebutton {
@@ -175,6 +175,7 @@ em {
 }
 
 div#menuNote {
+    background-image: url('../../../../assets/images/note_bg.png');
     border-radius: 12px;
     background-size: 90%;
     min-height: 100px;
