@@ -1,0 +1,167 @@
+@keyframes apparitionWidth {
+    0% {
+        opacity: 1;
+        width: 80%
+    }
+    100% {
+        opacity: 1;
+        width: 85%
+    }
+}
+
+@keyframes apparitionHeight {
+    0% {
+        opacity: 1;
+        height: 4px
+    }
+    50% {
+        opacity: 1
+    }
+    100% {
+        opacity: 1;
+        height: 6px
+    }
+}
+
+@keyframes apparitionOpacity {
+    0% {
+        opacity: 0
+    }
+    100% {
+        opacity: 1
+    }
+}
+
+@keyframes apparitionHaut {
+    0% {
+        margin-top: -100px
+    }
+}
+
+@keyframes apparitionBas {
+    0% {
+        margin-bottom: -80px
+    }
+}
+
+@keyframes apparitionGauche {
+    0% {
+        left: -400px
+    }
+}
+
+@keyframes apparitionFontSize {
+    0% {
+        font-size: 0
+    }
+    100% {
+        font-size: 1em
+    }
+}
+
+button {
+    outline: 0
+}
+
+body {
+    font-family: Arial, Times, sans-serif;
+    background-color: #282f37;
+    color: #dde0e0
+}
+
+div#windowTitle {
+    width: 100%;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+    color: #6d6d6d;
+    text-align: center;
+    font-size: .7em;
+    font-family: FlatBold;
+    height: 20px
+}
+
+div#windowTitleText {
+    position: absolute;
+    top: 24.8px;
+    width: 100%;
+    text-align: center;
+    font-family: HandWrite;
+    font-size: 1em;
+    color: #999
+}
+
+.pointable {
+    -webkit-app-region: no-drag;
+    cursor: pointer
+}
+
+div#barre_haut {
+    animation: apparitionHaut 1s forwards;
+    z-index: 10;
+    margin-left: -8px;
+    margin-top: -22px;
+    margin-right: -8px;
+    padding-top: 25px;
+    min-height: 34px;
+    min-width: 350px;
+    user-select: none;
+    width: 100%;
+    background-color: #36404c;
+    opacity: .97;
+    top: 0;
+    position: fixed;
+    -moz-box-shadow: 2px -2px 19px -3px rgba(0, 0, 0, .75)
+}
+
+#trayButtons {
+    position: absolute;
+    top: 24.8px;
+    right: 7.1px;
+    font-size: .7em
+}
+
+.listeBoutons {
+    float: right
+}
+
+.thumb {
+    padding-left: 10px;
+    display: inline-block;
+    overflow: hidden
+}
+
+div#TitrePrincipal {
+    text-overflow: ellipsis;
+    float: left;
+    margin-top: 4px;
+    font-family: FlatLight
+}
+
+div#TitrePrincipal:hover {
+    color: #fff
+}
+
+button#headerButton {
+    width: 27px;
+    background-color: transparent;
+    margin-right: 11px;
+    font-size: 1.2em;
+    float: left;
+    color: #cdcdcd;
+    border: none;
+    cursor: pointer;
+    transition: background-color .3s ease;
+    border-radius: 3px
+}
+
+button#headerButton:hover {
+    transition: background-color .1s ease;
+    color: #fff
+}
+
+em {
+    color: #16150b;
+    background-color: rgba(229, 234, 65, .89);
+    padding: .1em;
+    font-style: normal
+}

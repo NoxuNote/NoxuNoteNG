@@ -19,6 +19,8 @@ import { WebviewDirective } from './directives/webview.directive';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
+import { HeaderBarComponent } from './components/mainView/header-bar/header-bar.component';
+import { MenuLeftSaveComponent } from './components/mainView/menu-left-save/menu-left-save.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -29,7 +31,9 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [
     AppComponent,
     HomeComponent,
-    WebviewDirective
+    WebviewDirective,
+    HeaderBarComponent,
+    MenuLeftSaveComponent
   ],
   imports: [
     BrowserModule,

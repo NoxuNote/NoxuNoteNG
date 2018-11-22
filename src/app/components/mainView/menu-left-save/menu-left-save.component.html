@@ -1,0 +1,23 @@
+<div id="menuGaucheSauver" class="mlateral mlateral-gauche" [class.appear]="_isComponentOpened">
+  <div id="menuNote">
+    <i class="fa fa-times leftPannelClose" aria-hidden="true" (click)="close()">X</i>
+    <div (click)="close()">Fermer</div>
+    <div class="formSave">
+      <span style="font-size: 1.2em;">
+        <i class="fa fa-pencil" aria-hidden="true"></i> 
+      </span>
+      <input id="menuGaucheSauverInput" type="text" name="nom" placeholder="Ma note" onKeyDown="onTypeOnTitle();">
+      <input style="margin-top: -30px;" id="terminee" type="checkbox">
+      <label for="terminee">Favori (en développement)</label>
+      <div class="savebutton" onClick="save_as_noxunote()">Sauvegarder</div>
+    </div>
+  </div>
+  <div style="font-size: 2.5em; text-align: center; margin: 5px"><i class="fa fa-arrow-down" aria-hidden="true"></i></div>
+  <form>
+    <div id="matiere" style="background: #FFFFFF;"><input id="matneutre" type="radio" name="mat" value="">Non triée</div>
+    <div id="matieres">
+    <!---<div id="matiere" style="background-color: #D8DBDB">(A trier)</i></div>-->
+    </div>
+  </form>
+  <div id="matiere" onClick="openSettings('Matières')"><i class="fa fa-plus-circle" aria-hidden="true"></i></div>
+</div>
