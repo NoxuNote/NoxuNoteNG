@@ -5,3 +5,21 @@ html, body {
 
   height: 100%;
 }
+/* FLAT FONTS */
+@font-face {
+  font-family: FlatThin;
+  src: url("assets/fonts/Raleway-Thin.ttf");
+}
+@font-face {
+  font-family: FlatLight;
+  src: url("assets/fonts/Raleway-Light.ttf");
+}
+@font-face {
+  font-family: FlatBold;
+  src: url("assets/fonts/Raleway-Bold.ttf");
+}
+
+@font-face {
+  font-family: handwrite;
+  src: url("assets/fonts/magnolia_script.otf");
+}
