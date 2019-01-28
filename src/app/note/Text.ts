@@ -3,7 +3,7 @@ import { contentTracing } from "electron";
 
 export abstract class Text implements INoteStructureElement {
   rawContent(): string {
-    return this.content;
+    return "NOT IMPLEMENTED";
   }
   isEditable: boolean;
   onClick() {

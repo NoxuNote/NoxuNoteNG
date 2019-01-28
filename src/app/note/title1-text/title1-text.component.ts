@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Text } from '../Text'
 
 @Component({
@@ -8,12 +8,14 @@ import { Text } from '../Text'
 })
 export class Title1TextComponent extends Text implements OnInit {
 
+  @ViewChild('domContent') domContent: ElementRef;
+
   constructor() { 
     super()
   }
 
   rawContent(): string {
-    return this.content + '\n';
+    return '\n' + this.domContent.nativeElement.innerText;
   }
 
   ngOnInit() {
