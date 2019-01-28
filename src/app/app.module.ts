@@ -21,6 +21,7 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { HeaderBarComponent } from './components/mainView/header-bar/header-bar.component';
 import { MenuLeftSaveComponent } from './components/mainView/menu-left-save/menu-left-save.component';
+import { MenuLeftBrowseComponent } from './components/mainView/menu-left-browse/menu-left-browse.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -33,7 +34,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     HomeComponent,
     WebviewDirective,
     HeaderBarComponent,
-    MenuLeftSaveComponent
+    MenuLeftSaveComponent,
+    MenuLeftBrowseComponent
   ],
   imports: [
     BrowserModule,
