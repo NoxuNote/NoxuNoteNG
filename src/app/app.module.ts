@@ -21,6 +21,10 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './components/home/home.component';
 import { HeaderBarComponent } from './components/mainView/header-bar/header-bar.component';
 import { MenuLeftSaveComponent } from './components/mainView/menu-left-save/menu-left-save.component';
+import { LineReturnComponent } from './note/line-return/line-return.component';
+import { CorpsTextComponent } from './note/corps-text/corps-text.component';
+import { Title1TextComponent } from './note/title1-text/title1-text.component';
+import { NoteEditorComponent } from './components/note-editor/note-editor.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -33,7 +37,11 @@ export function HttpLoaderFactory(http: HttpClient) {
     HomeComponent,
     WebviewDirective,
     HeaderBarComponent,
-    MenuLeftSaveComponent
+    MenuLeftSaveComponent,
+    LineReturnComponent,
+    CorpsTextComponent,
+    Title1TextComponent,
+    NoteEditorComponent
   ],
   imports: [
     BrowserModule,
@@ -49,6 +57,10 @@ export function HttpLoaderFactory(http: HttpClient) {
     })
   ],
   providers: [ElectronService],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    LineReturnComponent,
+    CorpsTextComponent,
+    Title1TextComponent,]
 })
 export class AppModule { }
