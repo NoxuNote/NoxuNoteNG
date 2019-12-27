@@ -8,7 +8,7 @@ import { ElectronService } from '../../../core/services';
 })
 export class PlatformComponent implements OnInit {
 
-  constructor(private _es: ElectronService) { }
+  constructor(public es: ElectronService) { }
 
   ngOnInit() {
   }
