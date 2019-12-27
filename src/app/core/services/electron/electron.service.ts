@@ -4,7 +4,8 @@ import { Injectable } from '@angular/core';
 // the resulting javascript file will look as if you never imported the module at all.
 import { ipcRenderer, webFrame, remote } from 'electron';
 import * as childProcess from 'child_process';
-import * as fs from 'fs';
+import fs = require('fs-extra');
+
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class ElectronService {
   webFrame: typeof webFrame;
   remote: typeof remote;
   childProcess: typeof childProcess;
-  fs: typeof fs;
+  fs: typeof fs
 
   get isElectron(): boolean {
     return window && window.process && window.process.type;
@@ -28,7 +29,7 @@ export class ElectronService {
       this.remote = window.require('electron').remote;
 
       this.childProcess = window.require('child_process');
-      this.fs = window.require('fs');
+      this.fs = window.require('fs-extra');
     }
   }
 }

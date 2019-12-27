@@ -2,8 +2,11 @@
 
   <h2>Browser</h2>
 
+  Mode
+  <button (click)="switchToLocal()">Local</button>
+  <button (click)="switchToCloud()">Cloud</button>
   <ul>
-    <li *ngFor="let file of _ioService.listFiles()">{{ file }}</li>
+    <li *ngFor="let file of _files | async">{{ file }}</li>
   </ul>
 
 </div>
