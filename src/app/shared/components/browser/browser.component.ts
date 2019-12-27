@@ -30,5 +30,7 @@ export class BrowserComponent implements OnInit {
   refreshFiles() {
     this._files = this._ioService.listFiles()
   }
-
+  writeFile() {
+    this._ioService.writeFile()
+  }
 }

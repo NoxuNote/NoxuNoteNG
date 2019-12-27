@@ -25,6 +25,17 @@ export class IoService {
     }
   }
 
+  writeFile() {
+    const path = "C:/Users/black/NoxuNoteNG/notes/note.html"
+    switch (this.mode.getValue()) {
+      case StorageMode.Local:
+        this._localNoteDriverService.writeFile(path)
+        break;
+      case StorageMode.Cloud:
+        break;
+    }
+  }
+
   setMode(mode: StorageMode) {
     this.mode.next(mode);
   }

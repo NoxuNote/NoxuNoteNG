@@ -5,6 +5,7 @@
   Mode
   <button (click)="switchToLocal()">Local</button>
   <button (click)="switchToCloud()">Cloud</button>
+  <button (click)="writeFile()">WriteFile</button>
   <ul>
     <li *ngFor="let file of _files | async">{{ file }}</li>
   </ul>

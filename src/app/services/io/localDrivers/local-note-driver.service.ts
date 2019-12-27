@@ -14,4 +14,11 @@ export class LocalNoteDriverService {
     else return of([])
   }
 
+  public writeFile(name:string) {
+    if (this._elS.isElectron) {
+      console.log("wrote "+ name)
+      this._elS.fs.writeFileSync(name, "texte", {})
+    }
+  }
+
 }
