@@ -1,6 +1,6 @@
-import { NoteMetadata } from "../types/NoteMetadata";
+import { NoteMetadata } from "../../types/NoteMetadata";
 import { Observable } from "rxjs";
-import { Note } from "../types/Note";
+import { Note } from "../../types/Note";
 
 export interface INoteDriver {
 

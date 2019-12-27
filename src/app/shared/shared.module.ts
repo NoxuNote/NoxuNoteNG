@@ -6,10 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import { PageNotFoundComponent, PlatformComponent } from './components/';
 import { WebviewDirective } from './directives/';
 import { FormsModule } from '@angular/forms';
+import { BrowserComponent } from './components/browser/browser.component';
 
 @NgModule({
-  declarations: [PageNotFoundComponent, WebviewDirective, PlatformComponent],
+  declarations: [PageNotFoundComponent, WebviewDirective, PlatformComponent, BrowserComponent],
   imports: [CommonModule, TranslateModule, FormsModule],
-  exports: [TranslateModule, WebviewDirective, FormsModule, PlatformComponent]
+  exports: [TranslateModule, WebviewDirective, FormsModule, PlatformComponent, BrowserComponent]
 })
 export class SharedModule {}
