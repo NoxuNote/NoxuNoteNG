@@ -5,10 +5,9 @@ import { Note } from "../../types/Note";
 export interface INoteDriver {
 
   /**
-   * Récupère les métadonnées d'une note données
-   * @param uuid note dont on veut récupérer les informations
+   * Liste les notes disponibles
    */
-  getNoteMetadata(uuid: string): Observable<NoteMetadata>
+  listNotes(): Observable<NoteMetadata[]>
 
   /**
    * Récupère une note
@@ -23,10 +22,16 @@ export interface INoteDriver {
   saveNote(note: Note): Observable<boolean>
 
   /**
+   * Enregistre une nouvelle note
+   * @param note Note à enregistrer
+   */
+  saveNewNote(content: string, title?: string): Observable<boolean>
+
+  /**
    * Modifie les métadonnées d'une note
-   * @param uuid uuid de la note à modifier
    * @param newMetadata Nouvelles métadonnées
    */
   editMetadata(newMetadata: NoteMetadata): Observable<boolean>
+
 
 }
