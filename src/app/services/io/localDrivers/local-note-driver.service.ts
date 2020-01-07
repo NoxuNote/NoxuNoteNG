@@ -1,12 +1,11 @@
-import { Injectable, SystemJsNgModuleLoaderConfig } from '@angular/core';
-import { Observable, from, of, BehaviorSubject } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { ElectronService } from '../../../core/services';
 import { INoteDriver } from '../INoteDriver';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { PathsService } from './paths/paths.service';
-import {JsonConvert, OperationMode, ValueCheckingMode} from "json2typescript"
-import { resolve } from 'dns';
+import {JsonConvert, ValueCheckingMode} from "json2typescript"
 
 @Injectable({
   providedIn: 'root'
