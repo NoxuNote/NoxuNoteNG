@@ -13,11 +13,11 @@ export class PathsService {
   }
 
   getNotesFolder(): string {
-    return this._elS.path.join(this.getHomeDir(), 'notes')
+    return this._elS.path.join(this.getNoxuNoteDir(), 'notes')
   }
 
-  private getHomeDir(): string {
-    return this._elS.path.parse(this._elS.os.homedir()).dir
+  private getNoxuNoteDir(): string {
+    return this._elS.path.join(this._elS.os.homedir(), 'NoxuNoteNG')
   }
 
 }

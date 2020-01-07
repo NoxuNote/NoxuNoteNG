@@ -1,4 +1,4 @@
 export enum StorageMode {
-  "Local" = 1,
+  "Local",
   "Cloud"
 }

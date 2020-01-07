@@ -1,36 +1,50 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { IoService } from '../../../services';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
+import { NoteMetadata } from '../../../types/NoteMetadata';
 
 @Component({
   selector: 'app-browser',
   templateUrl: './browser.component.html',
   styleUrls: ['./browser.component.scss']
 })
-export class BrowserComponent implements OnInit {
+export class BrowserComponent implements OnInit, OnDestroy {
 
-  constructor(private _ioService: IoService) { }
+  constructor(private _ioS: IoService) { }
 
-  private _files: Observable<string[]>;
+  // Source is local files by default but can be overriden by
+  // Setting (source) as input
+  private _source: StorageMode = StorageMode.Local
+  // Catch source input change
+  @Input() set source(s: StorageMode) {
+    this._source = s
+    this.updateNoteList()
+  }
+
+  /**
+   * note service update subscription
+   */
+  private _noteServiceSub: Subscription
+
+  /**
+   * Stores displayed notes metadata
+   */
+  private _notes: NoteMetadata[]
 
   ngOnInit() {
-    this.refreshFiles()
+    this._noteServiceSub = this._ioS.getNotes(this._source).subscribe(metas=>this._notes = metas)
+    this.updateNoteList()
+  }
+  ngOnDestroy() {
+    this._noteServiceSub.unsubscribe()
   }
 
-  switchToLocal() {
-    this._ioService.setMode(StorageMode.Local)
-    this.refreshFiles()
+  /**
+   * Calls the IoService to re-fetch notes metadatas from source
+   */
+  public updateNoteList() {
+    this._ioS.updateNotes(this._source)
+  }
 
-  }
-  switchToCloud() {
-    this._ioService.setMode(StorageMode.Cloud)
-    this.refreshFiles()
-  }
-  refreshFiles() {
-    this._files = this._ioService.listFiles()
-  }
-  writeFile() {
-    this._ioService.writeFile()
-  }
 }

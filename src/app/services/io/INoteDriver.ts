@@ -6,8 +6,16 @@ export interface INoteDriver {
 
   /**
    * Liste les notes disponibles
+   * @description Cette liste nécessite un certain nombre d'opérations pour être obtenue,
+   * cette fonction renvoie donc la liste en cache
+   * Pour rafraîchir la liste des notes, utiliser refreshListNotes()
    */
-  listNotes(): Observable<NoteMetadata[]>
+  getListNotes(): Observable<NoteMetadata[]>
+
+  /**
+   * Rafraîchit la liste des notes en cache
+   */
+  refreshListNotes()
 
   /**
    * Récupère une note
@@ -32,6 +40,5 @@ export interface INoteDriver {
    * @param newMetadata Nouvelles métadonnées
    */
   editMetadata(newMetadata: NoteMetadata): Observable<boolean>
-
 
 }

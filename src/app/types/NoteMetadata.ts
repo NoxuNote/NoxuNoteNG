@@ -1,30 +1,41 @@
-export type NoteMetadata = {
+import { JsonObject, JsonProperty, Any } from "json2typescript";
+import { UTCDateConverter } from "./UTCDateConverter";
+
+@JsonObject("NoteMetadata")
+export class NoteMetadata {
   /**
    * Unique identifier of the note (UUID)
    */
-  uuid: string
+  @JsonProperty("uuid", String)
+  uuid: string = undefined;
   /**
    * Title of the note, given by the user 
    */
-  title: string,
+  @JsonProperty("title", String)
+  title: string = undefined;
   /**
    * Description of the note, given by the user 
    */
-  description: string,
+  @JsonProperty("description", String)
+  description: string = undefined;
   /**
    * Original author of the note, wrote by NoxuNote
    */
-  author: string,
+  @JsonProperty("author", String)
+  author: string = undefined;
   /**
    * Last edit date, wrote by NoxuNote
    */
-  lastedit: string,
+  @JsonProperty("lastedit", UTCDateConverter)
+  lastedit: Date = undefined;
   /**
    * Note version
    */
-  version: string,
+  @JsonProperty("version", Number)
+  version: number = undefined;
   /**
    * Other stored metadata (from plugins, extensions, preferences..)
    */
-  data: {},
+  @JsonProperty("data", Any)
+  data: {} = undefined;
 }

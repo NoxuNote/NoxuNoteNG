@@ -92,6 +92,7 @@
     "node": ">=10.9.0"
   },
   "dependencies": {
-    "fs-extra": "8.1.0"
+    "fs-extra": "8.1.0",
+    "json2typescript": "1.2.3"
   }
 }
