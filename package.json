@@ -92,7 +92,10 @@
     "node": ">=10.9.0"
   },
   "dependencies": {
+    "@angular/animations": "8.2.14",
     "fs-extra": "8.1.0",
-    "json2typescript": "1.2.3"
+    "json2typescript": "1.2.3",
+    "primeicons": "2.0.0",
+    "primeng": "9.0.0-rc.2"
   }
 }

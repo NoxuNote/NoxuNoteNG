@@ -2,7 +2,8 @@
 
   <h2>Browser</h2>
 
-  Mode {{_source}}
+  Mode {{_source}} 
+  <p-button (click)="updateNoteList()" label="Rafraichir"></p-button>
   <ul>
     <li *ngFor="let note of _notes">{{ note.title }}</li>
   </ul>
