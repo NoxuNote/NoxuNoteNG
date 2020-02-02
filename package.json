@@ -96,6 +96,6 @@
     "fs-extra": "8.1.0",
     "json2typescript": "1.2.3",
     "primeicons": "2.0.0",
-    "primeng": "9.0.0-rc.2"
+    "primeng": "^8.1.1"
   }
 }

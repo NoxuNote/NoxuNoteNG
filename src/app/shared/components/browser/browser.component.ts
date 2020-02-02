@@ -15,7 +15,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
-  private _source: StorageMode = StorageMode.Local
+   _source: StorageMode = StorageMode.Local
   // Catch source input change
   @Input() set source(s: StorageMode) {
     this._source = s
@@ -30,7 +30,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   /**
    * Stores displayed notes metadata
    */
-  private _notes: NoteMetadata[]
+   _notes: NoteMetadata[]
 
   ngOnInit() {
     this._noteServiceSub = this._ioS.getNotes(this._source).subscribe(metas=>this._notes = metas)
