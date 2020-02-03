@@ -1,16 +1,10 @@
 .container {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: url(../../assets/background.jpg) no-repeat center fixed;
-  -webkit-background-size: cover; /* pour anciens Chrome et Safari */
-  background-size: cover; /* version standardisée */
-
-  .title {
-    color: white;
-    margin: 0;
-    padding: 50px 20px;
-  }
+  .left {
+    min-width: 200px;
+    max-width: 300px;
+    width: 20vw;
+    height: 100vh;
+    padding: 20px;
+    background-color: var(--left-menu-background);
+  }  
 }

@@ -8,6 +8,7 @@ import { WebviewDirective } from './directives/';
 import { FormsModule } from '@angular/forms';
 import { BrowserComponent } from './components/browser/browser.component';
 
+import { SidebarModule } from 'primeng/sidebar';
 import { ButtonModule } from 'primeng/button';
 
 @NgModule({
@@ -21,14 +22,17 @@ import { ButtonModule } from 'primeng/button';
     CommonModule,
     TranslateModule,
     FormsModule,
-    ButtonModule
+    ButtonModule,
+    SidebarModule
   ],
   exports: [
     TranslateModule,
     WebviewDirective,
     FormsModule,
     PlatformComponent,
-    BrowserComponent
+    BrowserComponent,
+    ButtonModule,
+    SidebarModule
   ]
 })
 export class SharedModule {}
