@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import 'rxjs/add/observable/fromPromise';
+import { Observable, BehaviorSubject, from } from 'rxjs';
 import { ElectronService } from '../../../core/services';
 import { INoteDriver } from '../INoteDriver';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { PathsService } from './paths/paths.service';
-import {JsonConvert, ValueCheckingMode} from "json2typescript"
+import { JsonConvert, ValueCheckingMode } from "json2typescript"
 
 @Injectable({
   providedIn: 'root'
@@ -33,41 +34,52 @@ export class LocalNoteDriverService implements INoteDriver {
   refreshListNotes() {
     if (!this._elS.isElectron) return
     this._listNotesSubject.next([]) // clear subject before updating it
-    const fs = this._elS.fs
-    const path = this._elS.path
+    const fs = this._elS.fs // alias
+    const path = this._elS.path // alias
     const notesFolder = this._paS.getNotesFolder()
+    // List elements inside notes folder
+    fs.readdir(notesFolder).then((elements: string[]) => {
+      elements.forEach(el => {
+        // Fetch the metadata file/folder
+        const elPath = path.join(notesFolder, el)
+        fs.stat(elPath).then(elStat => {
+          // if the the element is a folder
+          if (elStat.isDirectory()) {
+            // check the metadata file
+            this.getMetaFromJson(path.join(elPath, 'meta.json')).then(meta => {
+              // append the meta to the subject
+              this._listNotesSubject.next(this._listNotesSubject.getValue().concat(meta))
+            }).catch(console.warn)
+          }
+        }).catch(console.error)
+      })
+    }).catch(console.error)
+  }
+
+  private getMetaFromJson(filePath: string): Promise<NoteMetadata> {
     // Loading JSON convert
     let jsonConvert: JsonConvert = new JsonConvert();
     jsonConvert.ignorePrimitiveChecks = false; // don't allow assigning number to string etc.
     jsonConvert.valueCheckingMode = ValueCheckingMode.DISALLOW_NULL; // never allow null
-    // List elements inside notes folder
-    fs.readdir(notesFolder)
-      .then((elements: string[]) => {
-        elements.forEach(el => {
-          // Fetch the metadata file/folder
-          const elPath = path.join(notesFolder, el)
-          fs.stat(elPath).then(elStat => {
-            // if the the element is a folder
-            if (elStat.isDirectory()) {
-              // check the metadata file
-              fs.readJSON(path.join(elPath, 'meta.json')).then(jsonObj => {
-                try {
-                  const noteMetadata = jsonConvert.deserializeObject(jsonObj, NoteMetadata)
-                  // add element to subject
-                  this._listNotesSubject.next(this._listNotesSubject.getValue().concat(noteMetadata))
-                } catch(e) {
-                  console.warn(`[ERREUR FORMAT] ${path.join(elPath, 'meta.json')}`)
-                  console.warn(e)
-                }
-              }).catch(console.warn)
-            }
-          })
-        })
-      }).catch(console.error)
+    return new Promise((resolve, reject) => {
+      this._elS.fs.readJSON(filePath).then(jsonObj => {
+        try {
+          resolve(jsonConvert.deserializeObject(jsonObj, NoteMetadata))
+        } catch(e) {
+          reject(`[ERREUR FORMAT] ${filePath}`)
+        }
+      }).catch(e=>reject(e))
+    })
   }
 
   getNote(uuid: string): Observable<Note> {
-    throw new Error("Method not implemented.");
+    if (!this._elS.isElectron) return
+    const noteFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note.html')
+    const metaFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'meta.json')
+    const metaPromise = this.getMetaFromJson(metaFile)                    // #1 fetch metadata
+    const contentPromise = this._elS.fs.readFile(noteFile, 'utf8')        // #2 fetch note content
+    const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([metaPromise, contentPromise])
+    from(unionPromise.then((c:[NoteMetadata, string])=> ({meta: c[0], content: c[1]} as Note)) )
   }
   saveNote(note: Note): Observable<boolean> {
     throw new Error("Method not implemented.");
