@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/observable/fromPromise';
 import { Observable, BehaviorSubject, from } from 'rxjs';
 import { ElectronService } from '../../../core/services';
 import { INoteDriver } from '../INoteDriver';
