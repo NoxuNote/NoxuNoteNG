@@ -78,7 +78,7 @@ export class LocalNoteDriverService implements INoteDriver {
     const metaPromise = this.getMetaFromJson(metaFile)                    // #1 fetch metadata
     const contentPromise = this._elS.fs.readFile(noteFile, 'utf8')        // #2 fetch note content
     const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([metaPromise, contentPromise])
-    from(unionPromise.then((c:[NoteMetadata, string])=> ({meta: c[0], content: c[1]} as Note)) )
+    return from(unionPromise.then((c:[NoteMetadata, string])=> ({meta: c[0], content: c[1]} as Note)) )
   }
   saveNote(note: Note): Observable<boolean> {
     throw new Error("Method not implemented.");

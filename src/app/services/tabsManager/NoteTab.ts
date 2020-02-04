@@ -1,7 +1,7 @@
-import { NoteMetadata } from "../../types/NoteMetadata";
+import { Note } from "../../types/Note";
 
 export class NoteTab {
-
-  meta: NoteMetadata
+ 
+  savedNote: Note;
 
 }

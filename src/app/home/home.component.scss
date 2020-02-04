@@ -1,10 +1,15 @@
 .container {
   .left {
-    min-width: 200px;
-    max-width: 300px;
-    width: 20vw;
+    position: fixed;
+    width: 250px;
     height: 100vh;
     padding: 20px;
     background-color: var(--left-menu-background);
-  }  
+  } 
+  .right {
+    margin-left: 250px;
+    height: 100vh;
+    padding: 0;
+    background-color: green;
+  }
 }

@@ -1,0 +1,7 @@
+<div>
+  <p-tabView>
+    <p-tabPanel *ngFor="let tab of tabs$ | async ; let i = index" [header]="tab.savedNote.meta.title" [selected]="i == (tabs$ | async).length-1">
+       {{ tab.savedNote.content }} {{ i }}
+    </p-tabPanel>
+  </p-tabView>
+</div>

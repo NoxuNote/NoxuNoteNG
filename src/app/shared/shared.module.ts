@@ -10,6 +10,7 @@ import { BrowserComponent } from './components/browser/browser.component';
 
 import { SidebarModule } from 'primeng/sidebar';
 import { ButtonModule } from 'primeng/button';
+import { TabViewModule } from 'primeng/tabview'
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { ButtonModule } from 'primeng/button';
     TranslateModule,
     FormsModule,
     ButtonModule,
-    SidebarModule
+    SidebarModule,
+    TabViewModule
   ],
   exports: [
     TranslateModule,
@@ -32,7 +34,8 @@ import { ButtonModule } from 'primeng/button';
     PlatformComponent,
     BrowserComponent,
     ButtonModule,
-    SidebarModule
+    SidebarModule,
+    TabViewModule
   ]
 })
 export class SharedModule {}

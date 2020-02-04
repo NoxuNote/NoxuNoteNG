@@ -3,6 +3,7 @@ import { IoService } from '../../../services';
 import { Subscription } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
+import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
 
 @Component({
   selector: 'app-browser',
@@ -11,7 +12,7 @@ import { NoteMetadata } from '../../../types/NoteMetadata';
 })
 export class BrowserComponent implements OnInit, OnDestroy {
 
-  constructor(private _ioS: IoService) { }
+  constructor(private _ioS: IoService, private _tmS: TabsManagerService) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
@@ -38,6 +39,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this._noteServiceSub.unsubscribe()
+  }
+
+  private noteClick(note: NoteMetadata) {
+    this._tmS.open(note.uuid)
   }
 
   /**
