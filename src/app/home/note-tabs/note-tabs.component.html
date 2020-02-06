@@ -1,7 +1,20 @@
-<div>
+<!-- <div>
   <p-tabView [controlClose]="true" (onClose)="handleClose($event)">
     <p-tabPanel *ngFor="let tab of tabs ; let i = index" [header]="tab.savedNote.meta.title" [selected]="i == tabs.length-1" [closable]="true" [attr.data-uuid]="tab.savedNote.meta.uuid">
        {{ tab.savedNote.content }} {{ i }}
     </p-tabPanel>
   </p-tabView>
+</div> -->
+<div>
+  <nz-tabset [(nzSelectedIndex)]="selectedIndex">
+    <nz-tab *ngFor="let tab of tabs ; let i = index" [attr.data-uuid]="tab.savedNote.meta.uuid" [nzTitle]="titleTemplate">
+      <ng-template #titleTemplate>
+        <div>
+          {{ tab.savedNote.meta.title }}
+          <i nz-icon nzType="close" (click)="handleClose(tab)" class="ant-tabs-close-x"></i>
+        </div>
+      </ng-template>
+      {{ tab.savedNote.content }} {{ i }}
+    </nz-tab>
+  </nz-tabset>
 </div>

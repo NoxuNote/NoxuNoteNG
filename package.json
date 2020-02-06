@@ -95,7 +95,6 @@
     "@angular/animations": "8.2.14",
     "fs-extra": "8.1.0",
     "json2typescript": "1.2.3",
-    "primeicons": "2.0.0",
-    "primeng": "^8.1.1"
+    "ng-zorro-antd": "8.5.2"
   }
 }
