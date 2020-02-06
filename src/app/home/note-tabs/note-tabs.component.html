@@ -14,7 +14,7 @@
           <i nz-icon nzType="close" (click)="handleClose(tab)" class="ant-tabs-close-x"></i>
         </div>
       </ng-template>
-      {{ tab.savedNote.content }} {{ i }}
+      <app-note-editor [note]="tab.savedNote.content"></app-note-editor>
     </nz-tab>
   </nz-tabset>
 </div>

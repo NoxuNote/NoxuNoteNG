@@ -10,13 +10,15 @@ import { BrowserComponent } from './components/browser/browser.component';
 
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
+import { NoteEditorComponent } from './components/note-editor/note-editor.component';
 
 @NgModule({
   declarations: [
     PageNotFoundComponent,
     WebviewDirective,
     PlatformComponent,
-    BrowserComponent
+    BrowserComponent,
+    NoteEditorComponent
   ],
   imports: [
     CommonModule,
@@ -32,6 +34,7 @@ import { NzTabsModule } from "ng-zorro-antd/tabs";
     FormsModule,
     PlatformComponent,
     BrowserComponent,
+    NoteEditorComponent,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
     NzTabsModule
