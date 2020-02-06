@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { StorageMode } from './StorageMode';
 import { LocalNoteDriverService } from './localDrivers/local-note-driver.service';
 import { NoteMetadata } from '../../types/NoteMetadata';
@@ -14,15 +14,30 @@ export class IoService {
   constructor(private _localNoteDriverService: LocalNoteDriverService) { }
 
   public getNote(source: StorageMode, uuid: string): Observable<Note> {
-    return this._localNoteDriverService.getNote(uuid)
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.getNote(uuid)
+      case StorageMode.Cloud:
+        return of(null)
+    }
   }
 
   public getNotes(source: StorageMode): Observable<NoteMetadata[]> {
-    return this._localNoteDriverService.getListNotes()
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.getListNotes()
+      case StorageMode.Cloud:
+        return of(null)
+    }
   }
 
   public updateNotes(source: StorageMode) {
-    this._localNoteDriverService.refreshListNotes()
+    switch (source) {
+      case StorageMode.Local:
+        this._localNoteDriverService.refreshListNotes()
+      case StorageMode.Cloud:
+        return of(null)
+    }
   }
 
 }
