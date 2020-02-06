@@ -2,18 +2,19 @@ import { Injectable } from '@angular/core';
 import { IoService } from '../io/io.service';
 import { StorageMode } from '../io/StorageMode';
 import { NoteTab } from './NoteTab';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Note } from '../../types/Note';
-import { timingSafeEqual } from 'crypto';
-import { cpus } from 'os';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TabsManagerService {
 
-  private _openedNotes: BehaviorSubject<NoteTab[]> = new BehaviorSubject<NoteTab[]>([]);
-  public readonly openedNotesObservable: Observable<NoteTab[]> = this._openedNotes.asObservable();
+  _openedNotes: BehaviorSubject<NoteTab[]> = new BehaviorSubject<NoteTab[]>([])
+  readonly openedNotesObservable: Observable<NoteTab[]> = this._openedNotes.asObservable()
+
+  _alreadyOpened: Subject<NoteTab> = new Subject<NoteTab>()
+  public alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
 
   constructor(private _ioS: IoService) { }
 
@@ -22,7 +23,12 @@ export class TabsManagerService {
    * @param uuid Note uuid
    */
   public open(uuid: string) {
-    if (this._openedNotes.getValue().map(n=>n.savedNote.meta.uuid).includes(uuid)) return
+    const alreadyOpenedTab: NoteTab | undefined = this._openedNotes.getValue().find(t=>t.savedNote.meta.uuid === uuid)
+    // Si la note est déjà ouverte, on émet un évènement
+    if (alreadyOpenedTab) {
+      this._alreadyOpened.next(alreadyOpenedTab)
+      return
+    }
     this._ioS.getNote(StorageMode.Local, uuid).toPromise().then(n=>this.append(n))
   }
 

@@ -8,9 +8,8 @@ import { WebviewDirective } from './directives/';
 import { FormsModule } from '@angular/forms';
 import { BrowserComponent } from './components/browser/browser.component';
 
-import { SidebarModule } from 'primeng/sidebar';
-import { ButtonModule } from 'primeng/button';
-import { TabViewModule } from 'primeng/tabview'
+import { NgZorroAntdModule } from "ng-zorro-antd";
+import { NzTabsModule } from "ng-zorro-antd/tabs";
 
 @NgModule({
   declarations: [
@@ -23,9 +22,9 @@ import { TabViewModule } from 'primeng/tabview'
     CommonModule,
     TranslateModule,
     FormsModule,
-    ButtonModule,
-    SidebarModule,
-    TabViewModule
+    /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
+    NgZorroAntdModule,
+    NzTabsModule
   ],
   exports: [
     TranslateModule,
@@ -33,9 +32,9 @@ import { TabViewModule } from 'primeng/tabview'
     FormsModule,
     PlatformComponent,
     BrowserComponent,
-    ButtonModule,
-    SidebarModule,
-    TabViewModule
+    /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
+    NgZorroAntdModule,
+    NzTabsModule
   ]
 })
 export class SharedModule {}
