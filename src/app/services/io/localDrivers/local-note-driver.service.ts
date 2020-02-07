@@ -73,7 +73,7 @@ export class LocalNoteDriverService implements INoteDriver {
 
   getNote(uuid: string): Observable<Note> {
     if (!this._elS.isElectron) return
-    const noteFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note.html')
+    const noteFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note')
     const metaFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'meta.json')
     const metaPromise = this.getMetaFromJson(metaFile)                    // #1 fetch metadata
     const contentPromise = this._elS.fs.readFile(noteFile, 'utf8')        // #2 fetch note content
