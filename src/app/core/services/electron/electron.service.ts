@@ -21,7 +21,7 @@ export class ElectronService {
   path: typeof path
 
   get isElectron(): boolean {
-    return window && window.process && window.process.type;
+    return !!(window && window.process && window.process.type);
   }
 
   constructor() {
