@@ -4,7 +4,7 @@ export type Note = {
   /**
    * Raw note content
    */
-  content: any,
+  content: Object,
   /**
    * Note metadata
    */

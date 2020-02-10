@@ -55,12 +55,10 @@ export class NoteEditorComponent implements AfterViewInit {
     });
   }
 
-  save() {
-    this.editor.save().then(outputData => {
-      this._ioS.saveNote(StorageMode.Local, {meta: this.note.meta, content: outputData} as Note).then(()=>{
-        this.saved.emit(true)
-      })
-    }).catch(console.error)
+  async save() {
+    const outputData = await this.editor.save()
+    await this._ioS.saveNote(StorageMode.Local, {meta: this.note.meta, content: outputData} as Note)
+    this.saved.emit(true)
   }
 
 }

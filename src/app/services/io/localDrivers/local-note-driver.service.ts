@@ -54,23 +54,22 @@ export class LocalNoteDriverService implements INoteDriver {
     }).catch(console.error)
   }
 
-  
   getNote(uuid: string): Observable<Note> {
     if (!this._elS.isElectron) return
-    const noteFile = this.getNotePath(uuid)
-    const metaPromise = this.getMetaFromJson(this.getMetaPath(uuid))                    // #1 fetch metadata
-    const contentPromise = this._elS.fs.readFile(noteFile, 'utf8')        // #2 fetch note content
-    const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([metaPromise, contentPromise])
-    return from(unionPromise.then((c:[NoteMetadata, string])=> ({meta: c[0], content: c[1]} as Note)) )
+    // Promise union between the 'note reading file promise' and the 'meta.json reading file promise'
+    const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([
+      this.getMetaFromJson(this.getMetaPath(uuid)),
+      this._elS.fs.readJson(this.getNotePath(uuid))
+    ])
+    return from(unionPromise.then( (c:[NoteMetadata, string]) => ( {meta: c[0], content: c[1]} as Note )))
   }
   
   async saveNote(note: Note): Promise<NoteMetadata> {
     if (!this._elS.isElectron) return
-    const noteFile = this.getNotePath(note.meta.uuid)
-    const metaFile = this.getMetaPath(note.meta.uuid)
+    // Promise union between the 'note writing file promise' and the 'meta.json writing file promise'
     await Promise.all([
-      this._elS.fs.writeFile(noteFile, note.content),
-      this._elS.fs.writeJSON(metaFile, this.getJsonFromMeta(note.meta))
+      this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
+      this._elS.fs.writeJson(this.getMetaPath(note.meta.uuid), this.getJsonFromMeta(note.meta))
     ])
     return note.meta
   }
