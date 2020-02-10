@@ -2,9 +2,9 @@ import { NoteMetadata } from "./NoteMetadata";
 
 export type Note = {
   /**
-   * Raw note content (html)
+   * Raw note content
    */
-  content: string,
+  content: any,
   /**
    * Note metadata
    */

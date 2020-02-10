@@ -20,6 +20,7 @@ export interface INoteDriver {
   /**
    * Récupère une note
    * @param uuid note dont on veut récupérer les informations
+   * @description Choix d'un observable car on peut annuler la souscription 
    */
   getNote(uuid: string): Observable<Note>
 
@@ -27,18 +28,18 @@ export interface INoteDriver {
    * Enregistre une note
    * @param note Note à enregistrer
    */
-  saveNote(note: Note): Observable<boolean>
+  saveNote(note: Note): Promise<NoteMetadata>
 
   /**
    * Enregistre une nouvelle note
    * @param note Note à enregistrer
    */
-  saveNewNote(content: string, title?: string): Observable<boolean>
+  saveNewNote(content: string, title?: string): Promise<NoteMetadata>
 
   /**
    * Modifie les métadonnées d'une note
    * @param newMetadata Nouvelles métadonnées
    */
-  editMetadata(newMetadata: NoteMetadata): Observable<boolean>
+  editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
 
 }
