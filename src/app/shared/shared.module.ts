@@ -18,7 +18,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     WebviewDirective,
     PlatformComponent,
     BrowserComponent,
-    NoteEditorComponent
+    NoteEditorComponent,
   ],
   imports: [
     CommonModule,
@@ -26,7 +26,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     FormsModule,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
-    NzTabsModule
+    NzTabsModule,
   ],
   exports: [
     TranslateModule,
@@ -37,7 +37,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     NoteEditorComponent,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
-    NzTabsModule
+    NzTabsModule,
   ]
 })
 export class SharedModule {}
