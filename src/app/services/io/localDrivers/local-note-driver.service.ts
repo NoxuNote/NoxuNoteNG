@@ -19,16 +19,6 @@ export class LocalNoteDriverService implements INoteDriver {
     return this._listNotesSubject.asObservable()
   }
 
-  /**
-   * NoteMetaData type guard
-   * @description types doesn't exist at runtime. see https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
-   * @param obj 
-   * @return true if obj is compatible with NoteMetadata type
-   */
-  private isNoteMetaData(obj: any): obj is NoteMetadata {
-    return obj.uuid !== undefined && obj.title !== undefined
-  }
-
   refreshListNotes() {
     if (!this._elS.isElectron) return
     this._listNotesSubject.next([]) // clear subject before updating it
@@ -120,7 +110,7 @@ export class LocalNoteDriverService implements INoteDriver {
    * @param uuid Note UUID
    */
   private getNotePath(uuid: string) {
-    return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note')
+    return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note.json')
   }
 
   /**
