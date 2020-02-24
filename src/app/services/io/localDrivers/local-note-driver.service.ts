@@ -11,23 +11,12 @@ import { JsonConvert, ValueCheckingMode } from "json2typescript"
   providedIn: 'root'
 })
 export class LocalNoteDriverService implements INoteDriver {
+  private _listNotesSubject = new BehaviorSubject<NoteMetadata[]>([])
 
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
-  private _listNotesSubject = new BehaviorSubject<NoteMetadata[]>([])
-
   getListNotes(): Observable<NoteMetadata[]> {
     return this._listNotesSubject.asObservable()
-  }
-
-  /**
-   * NoteMetaData type guard
-   * @description types doesn't exist at runtime. see https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
-   * @param obj 
-   * @return true if obj is compatible with NoteMetadata type
-   */
-  private isNoteMetaData(obj: any): obj is NoteMetadata {
-    return obj.uuid !== undefined && obj.title !== undefined
   }
 
   refreshListNotes() {
@@ -55,6 +44,39 @@ export class LocalNoteDriverService implements INoteDriver {
     }).catch(console.error)
   }
 
+  getNote(uuid: string): Observable<Note> {
+    if (!this._elS.isElectron) return
+    // Promise union between the 'note reading file promise' and the 'meta.json reading file promise'
+    const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([
+      this.getMetaFromJson(this.getMetaPath(uuid)),
+      this._elS.fs.readJson(this.getNotePath(uuid))
+    ])
+    return from(unionPromise.then( (c:[NoteMetadata, string]) => ( {meta: c[0], content: c[1]} as Note )))
+  }
+  
+  async saveNote(note: Note): Promise<NoteMetadata> {
+    if (!this._elS.isElectron) return
+    // Promise union between the 'note writing file promise' and the 'meta.json writing file promise'
+    await Promise.all([
+      this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
+      this._elS.fs.writeJson(this.getMetaPath(note.meta.uuid), this.getJsonFromMeta(note.meta))
+    ])
+    return note.meta
+  }
+
+  saveNewNote(content: string, title?: string): Promise<NoteMetadata> {
+    throw new Error("Method not implemented.");
+  }
+
+  editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
+    throw new Error("Method not implemented.");
+  }
+
+  
+  /**
+   * Returns the NoteMetadata readed from file
+   * @param filePath Path of the note meta file
+   */
   private getMetaFromJson(filePath: string): Promise<NoteMetadata> {
     // Loading JSON convert
     let jsonConvert: JsonConvert = new JsonConvert();
@@ -71,23 +93,32 @@ export class LocalNoteDriverService implements INoteDriver {
     })
   }
 
-  getNote(uuid: string): Observable<Note> {
-    if (!this._elS.isElectron) return
-    const noteFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note')
-    const metaFile = this._elS.path.join(this._paS.getNotesFolder(), uuid, 'meta.json')
-    const metaPromise = this.getMetaFromJson(metaFile)                    // #1 fetch metadata
-    const contentPromise = this._elS.fs.readFile(noteFile, 'utf8')        // #2 fetch note content
-    const unionPromise: Promise<[NoteMetadata, string]> = Promise.all([metaPromise, contentPromise])
-    return from(unionPromise.then((c:[NoteMetadata, string])=> ({meta: c[0], content: c[1]} as Note)) )
-  }
-  saveNote(note: Note): Observable<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  saveNewNote(content: string, title?: string): Observable<boolean> {
-    throw new Error("Method not implemented.");
-  }
-  editMetadata(newMetadata: NoteMetadata): Observable<boolean> {
-    throw new Error("Method not implemented.");
+  /**
+   * Returns the serialized JSON object from NoteMetada given object
+   * @param meta Note metadata
+   */
+  private getJsonFromMeta(meta: NoteMetadata): Object {
+    // Loading JSON convert
+    let jsonConvert: JsonConvert = new JsonConvert();
+    jsonConvert.ignorePrimitiveChecks = false; // don't allow assigning number to string etc.
+    jsonConvert.valueCheckingMode = ValueCheckingMode.DISALLOW_NULL; // never allow null
+    return jsonConvert.serializeObject(meta)
   }
 
+  /**
+   * Returns the complete path of the stored note
+   * @param uuid Note UUID
+   */
+  private getNotePath(uuid: string) {
+    return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note.json')
+  }
+
+  /**
+   * Returns the complete path of the stored note meta file
+   * @param uuid Note UUID
+   */
+  private getMetaPath(uuid: string) {
+    return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'meta.json')
+  }
+  
 }

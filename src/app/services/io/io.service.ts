@@ -36,7 +36,16 @@ export class IoService {
       case StorageMode.Local:
         this._localNoteDriverService.refreshListNotes()
       case StorageMode.Cloud:
-        return of(null)
+        return
+    }
+  }
+
+  public saveNote(source: StorageMode, note: Note): Promise<NoteMetadata> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.saveNote(note)
+      case StorageMode.Cloud:
+        return
     }
   }
 

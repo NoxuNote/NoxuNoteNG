@@ -19,7 +19,7 @@
   "main": "main.js",
   "private": true,
   "scripts": {
-    "postinstall": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps && npm run mockfiles",
     "ng": "ng",
     "start": "npm-run-all -p electron:serve ng:serve",
     "web": "npm run ng:serve:web",
@@ -37,7 +37,8 @@
     "test": "ng test",
     "e2e": "npm run build:prod && mocha --timeout 300000 --require ts-node/register e2e/**/*.spec.ts",
     "version": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "mockfiles": "node mockfiles/copyMockFiles.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "8.4.1",

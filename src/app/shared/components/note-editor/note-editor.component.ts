@@ -1,30 +1,55 @@
-import { Component, OnInit, Input, ViewChild, ViewContainerRef, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
+import { Note } from '../../../types/Note';
+import { IoService } from "../../../services/io/io.service";
+import { StorageMode } from '../../../services/io/StorageMode';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime } from "rxjs/operators";
 
 @Component({
   selector: 'app-note-editor',
   templateUrl: './note-editor.component.html',
   styleUrls: ['./note-editor.component.scss']
 })
-export class NoteEditorComponent implements AfterViewInit {
+export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorJs') el: ElementRef;
 
+  /**
+   * Input note
+   */
   @Input()
-  note: string
+  note: Note
 
   /**
    * Editor.js instance
    */
   editor: EditorJS
 
-  constructor() { }
+  /**
+   * Emits a new null value when the user changes the note content,
+   * Use with a debounceTime() pipe to avoid API overcalls
+   */
+  onChangeSubject: Subject<void> = new Subject<void>();
 
-  ngAfterViewInit() {
+  /**
+   * Component subject subscriptions
+   */
+  subscriptions: Subscription[] = []
+
+  /**
+   * Turns to false when the editor is not in sync with data saved
+   */
+  changesAreSaved: boolean = true
+
+  constructor(private _ioS: IoService) { }
+
+  ngAfterViewInit() {    
     this.editor = new EditorJS({
       holder: this.el.nativeElement,
       autofocus: true,
+      data: this.note.content as any,
       placeholder: "Entrez du texte",
       tools: {
         header: Header,
@@ -37,15 +62,32 @@ export class NoteEditorComponent implements AfterViewInit {
         console.log('Editor.js is ready to work!')
       },
       onChange: () => {
-        console.log('onChange')
+        this.onChangeSubject.next()
+        this.changesAreSaved = false
       }
     });
+    // Once user hasn't changed the note for 3 seconds, save 
+    this.subscriptions.push( 
+      this.onChangeSubject.pipe(debounceTime(3000)).subscribe(() => this.save()) 
+    )
   }
 
-  save() {
-    this.editor.save().then(outputData => {
-      console.log(outputData);
-    }).catch(console.error)
+  ngOnDestroy() {
+    this.subscriptions.map(s=>s.unsubscribe())
+    if (!this.changesAreSaved) this.save().then(()=>this.editor.destroy())
+    else this.editor.destroy()
+  }
+
+  /**
+   * Asks asynchronously EditorJS to generate a JSON representation of the note
+   * Asks asynchronously the IOService to save this representation
+   */
+  async save() {
+    console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.note.meta.title})`);
+    const outputData = await this.editor.save()
+    await this._ioS.saveNote(StorageMode.Local, {meta: this.note.meta, content: outputData} as Note)
+    console.debug(`[AUTOMATIC SAVE] done. (${this.note.meta.title})`)
+    this.changesAreSaved = true
   }
 
 }
