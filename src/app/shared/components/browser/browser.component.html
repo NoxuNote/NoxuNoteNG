@@ -2,8 +2,8 @@
 
   <h2>Browser</h2>
 
-  Mode {{_source}} 
-  <button nz-button nzType="primary" (click)="updateNoteList()">Rafraîchir</button>
+  Stockage : <b>{{_source==0 ? 'Disque dur' : 'Cloud'}}</b>&nbsp;
+  <button nz-button nzType="secondary" (click)="updateNoteList()"><i nz-icon nzType="reload" nzTheme="outline"></i></button>
   <ul>
     <li *ngFor="let note of _notes" (click)="noteClick(note)">{{ note.title }}</li>
   </ul>
