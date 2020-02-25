@@ -4,7 +4,9 @@
     "outDir": "../out-tsc/app",
     "module": "commonjs",
     "baseUrl": "",
-    "types": []
+    "types": [
+      "mathjax"
+    ]
   },
   "exclude": [
     "**/*.spec.ts"

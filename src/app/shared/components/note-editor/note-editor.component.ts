@@ -45,7 +45,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   constructor(private _ioS: IoService) { }
 
-  ngAfterViewInit() {    
+  ngAfterViewInit() {
     this.editor = new EditorJS({
       holder: this.el.nativeElement,
       autofocus: true,
@@ -67,14 +67,14 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       }
     });
     // Once user hasn't changed the note for 3 seconds, save 
-    this.subscriptions.push( 
-      this.onChangeSubject.pipe(debounceTime(3000)).subscribe(() => this.save()) 
+    this.subscriptions.push(
+      this.onChangeSubject.pipe(debounceTime(3000)).subscribe(() => this.save())
     )
   }
 
   ngOnDestroy() {
-    this.subscriptions.map(s=>s.unsubscribe())
-    if (!this.changesAreSaved) this.save().then(()=>this.editor.destroy())
+    this.subscriptions.map(s => s.unsubscribe())
+    if (!this.changesAreSaved) this.save().then(() => this.editor.destroy())
     else this.editor.destroy()
   }
 
@@ -85,9 +85,49 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.note.meta.title})`);
     const outputData = await this.editor.save()
-    await this._ioS.saveNote(StorageMode.Local, {meta: this.note.meta, content: outputData} as Note)
+    await this._ioS.saveNote(StorageMode.Local, { meta: this.note.meta, content: outputData } as Note)
     console.debug(`[AUTOMATIC SAVE] done. (${this.note.meta.title})`)
     this.changesAreSaved = true
+  }
+
+  insertFormulae() {
+    const selection = this.saveSelection()
+    this.insertNodeAtCursor(document.createTextNode('coucou'))
+    this.restoreSelection(selection)
+  }
+
+  saveSelection() {
+    if (window.getSelection) {
+      const sel = window.getSelection();
+      if (sel.getRangeAt && sel.rangeCount) {
+        return sel.getRangeAt(0);
+      }
+    }
+    return null;
+  }
+
+  restoreSelection(range) {
+    if (range) {
+      if (window.getSelection) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }
+
+  insertNodeAtCursor(node: Node) {
+    // const block = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+    // const editableElement = block.querySelector('[contenteditable="true"]')
+    let sel: Selection, range: Range;
+    if (window.getSelection) {
+      sel = window.getSelection();
+      if (sel.getRangeAt && sel.rangeCount) {
+        range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(node);
+      }
+    }
   }
 
 }
