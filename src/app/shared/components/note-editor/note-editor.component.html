@@ -1,4 +1,12 @@
 <div>
+  <div [appMath]="mathLatex"></div>
+
+  <div [appMath]="mathMl"></div>
+
+  <!-- will render inline element math -->
+  <div [appMath]>
+    $E = mc^2$
+  </div>
   <button (click)="insertFormulae()">Insert formulae</button>
   <div #editorJs></div>
 </div>

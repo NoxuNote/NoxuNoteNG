@@ -3,10 +3,7 @@
   "compilerOptions": {
     "outDir": "../out-tsc/app",
     "module": "commonjs",
-    "baseUrl": "",
-    "types": [
-      "mathjax"
-    ]
+    "baseUrl": ""
   },
   "exclude": [
     "**/*.spec.ts"

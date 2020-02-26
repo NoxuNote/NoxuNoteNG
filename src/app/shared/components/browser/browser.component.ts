@@ -1,9 +1,9 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { IoService } from '../../../services';
 import { Subscription } from 'rxjs';
-import { StorageMode } from '../../../services/io/StorageMode';
+import { StorageMode } from '../../../services';
 import { NoteMetadata } from '../../../types/NoteMetadata';
-import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
+import { TabsManagerService } from '../../../services';
 
 @Component({
   selector: 'app-browser',

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { TabsManagerService } from '../../services/tabsManager/tabs-manager.service';
-import { NoteTab } from '../../services/tabsManager/NoteTab';
+import { TabsManagerService } from '../../services';
+import { NoteTab } from '../../services';
 import { Subscription } from 'rxjs';
 
 @Component({

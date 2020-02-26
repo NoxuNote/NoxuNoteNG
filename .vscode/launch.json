@@ -1,0 +1,37 @@
+{
+  // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+  // Pointez pour afficher la description des attributs existants.
+  // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Angular in chrome",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    }, 
+
+    {
+      "type": "node",
+      "name": "Debug Angular in electron",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "electron:serve-noelectron",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
+      },
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+      },
+      "args" : [".", "--serve", "--remote-debugging-port=4200"],
+      "outputCapture": "std"
+    }
+
+  ]
+}

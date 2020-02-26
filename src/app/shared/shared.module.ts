@@ -11,6 +11,7 @@ import { BrowserComponent } from './components/browser/browser.component';
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
 import { NoteEditorComponent } from './components/note-editor/note-editor.component';
+import { MathModule } from './modules/';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     WebviewDirective,
     PlatformComponent,
     BrowserComponent,
-    NoteEditorComponent,
+    NoteEditorComponent
   ],
   imports: [
     CommonModule,
@@ -27,6 +28,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
     NzTabsModule,
+    MathModule.forRoot()
   ],
   exports: [
     TranslateModule,
@@ -38,6 +40,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
     NzTabsModule,
+    MathModule
   ]
 })
 export class SharedModule {}
