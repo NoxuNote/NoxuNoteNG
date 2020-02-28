@@ -2,11 +2,13 @@ import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy } fro
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
+// import Paragraph from "@editorjs/paragraph";
+import Paragraph from "./customTools/paragraph";
 import { Note } from '../../../types/Note';
-import { IoService } from "../../../services/io/io.service";
-import { StorageMode } from '../../../services/io/StorageMode';
+import { IoService, StorageMode, MathjaxService } from "../../../services";
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
+import { prepareSyntheticListenerFunctionName } from '@angular/compiler/src/render3/util';
 
 @Component({
   selector: 'app-note-editor',
@@ -15,6 +17,7 @@ import { debounceTime } from "rxjs/operators";
 })
 export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorJs') el: ElementRef;
+  @ViewChild('test') testEl: ElementRef;
 
   /**
    * Input note
@@ -43,15 +46,19 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   changesAreSaved: boolean = true
 
-  constructor(private _ioS: IoService) { }
+  constructor(private _ioS: IoService, private _mjS: MathjaxService) { }
 
-  ngAfterViewInit() {    
+  ngAfterViewInit() {
+
+
+
     this.editor = new EditorJS({
       holder: this.el.nativeElement,
       autofocus: true,
       data: this.note.content as any,
       placeholder: "Entrez du texte",
       tools: {
+        paragraph: Paragraph,
         header: Header,
         list: List,
       },
@@ -60,6 +67,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       */
       onReady: () => {
         console.log('Editor.js is ready to work!')
+        this.typeset()
+        console.log(Paragraph)
       },
       onChange: () => {
         this.onChangeSubject.next()
@@ -67,14 +76,14 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       }
     });
     // Once user hasn't changed the note for 3 seconds, save 
-    this.subscriptions.push( 
-      this.onChangeSubject.pipe(debounceTime(3000)).subscribe(() => this.save()) 
+    this.subscriptions.push(
+      this.onChangeSubject.pipe(debounceTime(3000)).subscribe(() => this.save())
     )
   }
 
   ngOnDestroy() {
-    this.subscriptions.map(s=>s.unsubscribe())
-    if (!this.changesAreSaved) this.save().then(()=>this.editor.destroy())
+    this.subscriptions.map(s => s.unsubscribe())
+    if (!this.changesAreSaved) this.save().then(() => this.editor.destroy())
     else this.editor.destroy()
   }
 
@@ -84,10 +93,87 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.note.meta.title})`);
-    const outputData = await this.editor.save()
-    await this._ioS.saveNote(StorageMode.Local, {meta: this.note.meta, content: outputData} as Note)
+    let outputData = await this.editor.save()
+    await this._ioS.saveNote(StorageMode.Local, { meta: this.note.meta, content: outputData } as Note)
     console.debug(`[AUTOMATIC SAVE] done. (${this.note.meta.title})`)
     this.changesAreSaved = true
+  }
+
+  insertFormulae() {
+    const selection = this.saveSelection()
+    this.insertNodeAtCursor(document.createTextNode('coucou'))
+    this.restoreSelection(selection)
+  }
+
+  saveSelection() {
+    if (window.getSelection) {
+      const sel = window.getSelection();
+      if (sel.getRangeAt && sel.rangeCount) {
+        return sel.getRangeAt(0);
+      }
+    }
+    return null;
+  }
+
+  restoreSelection(range) {
+    if (range) {
+      if (window.getSelection) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  }
+
+  /**
+   * UNUSED
+   */
+  async insertMath() {
+    const node = await this._mjS.tex2chtml('\\sqrt{x^2+1}', this.testEl.nativeElement)
+    setTimeout(() => {
+      console.log(node);
+      // (<Element> this.testEl.nativeElement).appendChild(node)
+      this.insertNodeAtCursor(node)
+      this._mjS.clearAndUpdate()
+    }, 1000);
+  }
+
+  /**
+   * Render maths
+   * Transforms every : $ \alpha $ 
+   * To <span contenteditable="false">
+   *      <span class="hidden">|RAW| \alpha |/RAW|</span>
+   *      <span class="hidden">|OUTPUT|</span><mjx-container>...</mjx-container><span class="hidden">|/OUTPUT|</span>
+   *    </span>
+   */
+  typeset() {
+    const count = this.editor.blocks.getBlocksCount()
+    // Wrap every $ \alpha $ into a span containing raw "|RAW| \alpha |/RAW|" and "|OUTPUT|$ \alpha $|/OUTPUT|" <- this one will be transformed 
+    for (let i = 0; i < count; i++) {
+      const block = this.editor.blocks.getBlockByIndex(i)
+      let editableElement = block.querySelector('[contenteditable="true"]')
+      editableElement = this._mjS.wrapBeforeTypeset(editableElement)
+    }
+    // Ask Mathjax to transform $ \alpha $ to CHTML
+    this._mjS.typeset()
+  }
+
+  /**
+   * UNUSED
+   * @param node 
+   */
+  insertNodeAtCursor(node: Node) {
+    // const block = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+    // const editableElement = block.querySelector('[contenteditable="true"]')
+    let sel: Selection, range: Range;
+    if (window.getSelection) {
+      sel = window.getSelection();
+      if (sel.getRangeAt && sel.rangeCount) {
+        range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(node);
+      }
+    }
   }
 
 }

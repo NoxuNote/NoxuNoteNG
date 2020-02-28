@@ -1,14 +1,39 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>AngularElectron</title>
   <base href="">
-
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['`', '`'], ['\\(', '\\)']] },
+      chtml: {
+        displayAlign: 'left'
+      },
+      startup: {
+        ready: function () {
+          //
+          //  Do the usual startup (which does a typeset)
+          //
+          MathJax.startup.defaultReady();
+          //
+          //  When that is all done, un-hide the page
+          //
+          // MathJax.startup.promise.then(function () {
+          //   document.getElementById("hidden").disabled = true;
+          // });
+        }
+      }
+    };
+  </script>
+  <script src="./mathjax/tex-chtml.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
+
 <body>
   <app-root>Loading...</app-root>
 </body>
+
 </html>
