@@ -1,6 +1,5 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter } from '@angular/core';
 import EditorJS from '@editorjs/editorjs';
-import List from './customTools/list';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
 import { Note } from '../../../types/Note';
@@ -88,8 +87,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       placeholder: "Entrez du texte",
       tools: {
         paragraph: Paragraph,
-        header: Header,
-        list: List,
+        header: Header
       },
       /**
       * onReady callback
@@ -149,6 +147,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     const wrapper = await this._mjS.generateWrapper("", "")    
     insertNodeAtCursor(wrapper)
     this.editFormula(wrapper)
+    this.bindOnFormulaClick(wrapper.parentElement)
   }
 
   /**
@@ -216,7 +215,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
 
   /**
    * Re-binds the onClick formula handler on a block
-   * @param block An editor.js block
+   * @param block Any HTMLElement containing a wrapper
    */
   bindOnFormulaClick(block: HTMLElement) {
     block.querySelectorAll('.formula').forEach((formula: HTMLSpanElement) => {
