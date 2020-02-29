@@ -1,5 +1,6 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter } from '@angular/core';
 import EditorJS from '@editorjs/editorjs';
+import List from './customTools/list';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
 import { Note } from '../../../types/Note';
@@ -46,11 +47,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   changesAreSaved: boolean = true
 
   /**
-   * Currently written raw math formula
+   * Currently written raw math formulae
    * (injected as input for math-input component)
    */
   math = {
-    rawFormula: "",
+    rawFormulae: "",
     notchOnLeft: false,
     style: {
       display: 'none',
@@ -66,8 +67,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
         this.math.style.display = 'none'
         this.typeset()
       },
-      rawFormulaChange: ($event) => console.log($event),
-      onFormulaClick: (formula) => this.editFormula(formula)
+      rawFormulaeChange: ($event) => console.log($event),
+      onFormulaClick: (formulae) => this.editFormulae(formulae)
     }
   } 
 
@@ -87,7 +88,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       placeholder: "Entrez du texte",
       tools: {
         paragraph: Paragraph,
-        header: Header
+        header: Header,
+        list: List,
       },
       /**
       * onReady callback
@@ -142,33 +144,32 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
 
-  async insertFormula() {
+  async insertFormulae() {
     // Create an empty wrapper and edit id
     const wrapper = await this._mjS.generateWrapper("", "")    
     insertNodeAtCursor(wrapper)
-    this.editFormula(wrapper)
+    this.editFormulae(wrapper)
   }
 
   /**
-   * Ouvre la popup de modification de la formula
+   * Ouvre la popup de modification de la formulae
    * @param wrapper Element englobant la formule brute et la formule CHTML rendue par MathJax
    */
-  editFormula(wrapper: HTMLSpanElement) {
-   
-    const rawFormulaEl = wrapper.querySelector('.rawFormula')
-    const outputFormulaEl = wrapper.querySelector('.outputFormula')
+  editFormulae(wrapper: HTMLSpanElement) {   
+    const rawFormulaeEl = wrapper.querySelector('.rawFormulae')
+    const outputFormulaeEl = wrapper.querySelector('.outputFormulae')
     // Bind the new handler to math-input change
-    this.math.events.rawFormulaChange = ($event) => {
-      rawFormulaEl.innerHTML = $event
-      outputFormulaEl.innerHTML = "" // clean output
-      this._mjS.tex2chtml($event).then(chtml => { // generate new CHTML and insert it into outputFormula
-        outputFormulaEl.appendChild(chtml)
+    this.math.events.rawFormulaeChange = ($event) => {
+      rawFormulaeEl.innerHTML = $event
+      outputFormulaeEl.innerHTML = "" // clean output
+      this._mjS.tex2chtml($event).then(chtml => { // generate new CHTML and insert it into outputFormulae
+        outputFormulaeEl.appendChild(chtml)
         this._mjS.clearAndUpdate()
       })
     }
 
     this.math.style.display = "block" // Show the math-input component
-    this.math.rawFormula = rawFormulaEl.innerHTML // reset raw formula
+    this.math.rawFormulae = rawFormulaeEl.innerHTML // reset raw formulae
     
     // Get wrapper coordinates and component offset coordinates
     const rect = wrapper.getBoundingClientRect()
@@ -189,9 +190,9 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    * Render maths
    * Typesets ALL BLOCKS : 
    * Transforms every : $ \alpha $ 
-   * To <span contenteditable="false" class="formula">
-   *      <span class="rawFormula">\alpha</span>
-   *      <span class="outputFormula"><mjx-container>...</mjx-container></span>
+   * To <span contenteditable="false" class="formulae">
+   *      <span class="rawFormulae">\alpha</span>
+   *      <span class="outputFormulae"><mjx-container>...</mjx-container></span>
    *    </span> &nbsp;
    */
   async typeset() {
@@ -218,8 +219,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    * @param block An editor.js block
    */
   bindOnFormulaClick(block: HTMLElement) {
-    block.querySelectorAll('.formula').forEach((formula: HTMLSpanElement) => {
-      formula.onmousedown = () => this.math.events.onFormulaClick(formula)
+    block.querySelectorAll('.formulae').forEach((formulae: HTMLSpanElement) => {
+      formulae.onmousedown = () => this.math.events.onFormulaClick(formulae)
     })
   }
 

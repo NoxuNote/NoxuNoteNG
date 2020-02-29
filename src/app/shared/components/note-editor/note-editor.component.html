@@ -1,15 +1,15 @@
 <div #container>
   <app-math-input 
     #mathInput 
-    [rawFormula]="math.rawFormula" 
-    (rawFormulaChange)="math.events.rawFormulaChange($event)"
+    [rawFormulae]="math.rawFormulae" 
+    (rawFormulaeChange)="math.events.rawFormulaeChange($event)"
     [ngStyle]="math.style"
     (validate)="math.events.validate()"
     (close)="math.events.close()"
     [notchOnLeft]="math.notchOnLeft"
     >
   </app-math-input>
-  <button (click)="insertFormula()">insertMath</button>
+  <button (click)="insertFormulae()">insertMath</button>
   <button (click)="typeset()">typeset</button>
   <div #editorJs></div>
 </div>

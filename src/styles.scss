@@ -14,10 +14,10 @@ app-math-input {
   position: absolute;
   z-index: 2;
 }
-.rawFormula {
+.rawFormulae {
   display: none;
 } 
-.outputFormula, mjx-container[jax="CHTML"][display="true"] {
+.outputFormulae, mjx-container[jax="CHTML"][display="true"] {
   display: inline!important;
   margin: 1em 0!important;
   font-size: 1.1em;
