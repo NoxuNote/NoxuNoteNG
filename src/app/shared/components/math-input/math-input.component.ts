@@ -7,8 +7,8 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 })
 export class MathInputComponent {
 
-  @Input() rawFormulae: string  = "";
-  @Output() rawFormulaeChange   = new EventEmitter<string>();
+  @Input() rawFormula: string  = "";
+  @Output() rawFormulaChange   = new EventEmitter<string>();
 
   @Input() notchOnLeft: boolean = false;
   

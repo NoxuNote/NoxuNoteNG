@@ -47,7 +47,7 @@ export class MathjaxService {
    * Enveloppe les balises mathématiques inserées dans l'élément dans un wrapper (décrit plus bas) 
    * et **génère la formule avec Mathjax**
    * @param el Un élément, généralement un block EditorJs
-   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormulae
+   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormula
    */
   async wrap(el: Element, shouldTypeset: boolean=false) {
     el.innerHTML = await replaceAsync(el.innerHTML, /`([^\`]+)`/g, async (a, b) => {
@@ -59,29 +59,29 @@ export class MathjaxService {
 
   /**
    * Génère un noeud contenant 2 noeuds :
-   * - le premier **rawFormulae** destiné à contenir une formule brute mathématique
-   * - le second **outputFormulae** destiné à l'affichage, porte l'élément géneré par MathJax
-   * @param rawFormulae Formule mathématique ASCII brute (sans balises ``)
-   * @param outputFormulae Objet affiché, géneré par MathJax
-   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormulae
+   * - le premier **rawFormula** destiné à contenir une formule brute mathématique
+   * - le second **outputFormula** destiné à l'affichage, porte l'élément géneré par MathJax
+   * @param rawFormula Formule mathématique ASCII brute (sans balises ``)
+   * @param outputFormula Objet affiché, géneré par MathJax
+   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormula
    */
-  async generateWrapper(rawFormulae: string, outputFormulae: string, shouldTypeset: boolean=false): Promise<HTMLSpanElement> {
+  async generateWrapper(rawFormula: string, outputFormula: string, shouldTypeset: boolean=false): Promise<HTMLSpanElement> {
     const span = document.createElement('span')
     span.contentEditable = "false"
-    span.className = "formulae"
+    span.className = "formula"
     if (shouldTypeset) {
-      // Call MathJax to build the formulae CHTML
-      const chtml: Node = await this.tex2chtml(rawFormulae)
+      // Call MathJax to build the formula CHTML
+      const chtml: Node = await this.tex2chtml(rawFormula)
       // Generate wrapper
-      span.innerHTML = `<span class="rawFormulae">${rawFormulae}</span>`
-      const outputFormulaeEl = document.createElement('span')
-      outputFormulaeEl.className = "outputFormulae"
-      outputFormulaeEl.appendChild(chtml)
-      span.appendChild(outputFormulaeEl)
+      span.innerHTML = `<span class="rawFormula">${rawFormula}</span>`
+      const outputFormulaEl = document.createElement('span')
+      outputFormulaEl.className = "outputFormula"
+      outputFormulaEl.appendChild(chtml)
+      span.appendChild(outputFormulaEl)
     } else {
       // Generate wrapper
-      span.innerHTML = `<span class="rawFormulae">${rawFormulae}</span>\
-  <span class="outputFormulae">${outputFormulae}</span>&nbsp;`
+      span.innerHTML = `<span class="rawFormula">${rawFormula}</span>\
+  <span class="outputFormula">${outputFormula}</span>&nbsp;`
     }
 
     return span

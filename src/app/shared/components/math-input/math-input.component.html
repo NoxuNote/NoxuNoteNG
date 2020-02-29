@@ -1,12 +1,12 @@
 <div id="element">
   <div id="container">
     <input 
-      id="rawFormulaeInput"
+      id="rawFormulaInput"
       nz-input 
       nzSize="small"
       type="text" 
-      [(ngModel)]="rawFormulae" 
-      (ngModelChange)="rawFormulaeChange.emit(rawFormulae)"
+      [(ngModel)]="rawFormula" 
+      (ngModelChange)="rawFormulaChange.emit(rawFormula)"
       placeholder="\frac{1}{\alpha}..."
       >
     <button nz-button nzType="primary" nzSize="small" (click)="validate.emit()">
