@@ -1,4 +1,14 @@
-<div>
+<div #container>
+  <app-math-input 
+    #mathInput 
+    [rawFormulae]="math.rawFormulae" 
+    (rawFormulaeChange)="math.events.rawFormulaeChange($event)"
+    [ngStyle]="math.style"
+    (validate)="math.events.validate()"
+    (close)="math.events.close()"
+    [notchOnLeft]="math.notchOnLeft"
+    >
+  </app-math-input>
   <button (click)="popupMath()">insertMath</button>
   <button (click)="typeset()">typeset</button>
   <div #editorJs></div>

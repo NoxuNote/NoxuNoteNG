@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { OutputData } from '@editorjs/editorjs';
+import { replaceAsync } from "../../types/staticTools"
 
 declare const MathJax: any;
 
@@ -10,12 +10,9 @@ export class MathjaxService {
 
   constructor() { }
 
-  tex2chtml(input: string, outputNode: Node): Promise<Node> {
-    input = input.trim()
+  tex2chtml(input: string): Promise<Node> {
     MathJax.texReset()
-    var options = MathJax.getMetricsFor(outputNode);
-    console.log(options);
-    return MathJax.tex2chtmlPromise(input, options)
+    return MathJax.tex2chtmlPromise(input, {})
   }
 
   /**
@@ -24,10 +21,6 @@ export class MathjaxService {
   clearAndUpdate() {
     MathJax.startup.document.clear();
     MathJax.startup.document.updateDocument();
-  }
-
-  typeset() {
-    MathJax.typesetPromise()
   }
 
   // wrapBeforeTypeset(el: Element) {
@@ -41,15 +34,49 @@ export class MathjaxService {
   //   return el;
   // }
 
-  wrapBeforeTypeset(el: Element) {    
-    el.innerHTML = el.innerHTML.replace(/`([^\`]+)`/g, (a, b) => 
-      // a matches: $1/2$    and b matches the first capturing group: 1/2
-      `<span contenteditable="false" class="formulae">
-        <span class="rawFormulae">${b}</span>
-        <span class="outputFormulae">${a}</span>
-      </span>`
-    )
+
+  /**
+   * Enveloppe les balises mathématiques inserées dans l'élément dans un wrapper (décrit plus bas) 
+   * et **génère la formule avec Mathjax**
+   * @param el Un élément, généralement un block EditorJs
+   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormulae
+   */
+  async wrap(el: Element, shouldTypeset: boolean=false) {
+    el.innerHTML = await replaceAsync(el.innerHTML, /`([^\`]+)`/g, async (a, b) => {
+      const wrap = await this.generateWrapper(b, a, shouldTypeset)
+      return wrap.outerHTML
+    })
     return el;
+  }
+
+  /**
+   * Génère un noeud contenant 2 noeuds :
+   * - le premier **rawFormulae** destiné à contenir une formule brute mathématique
+   * - le second **outputFormulae** destiné à l'affichage, porte l'élément géneré par MathJax
+   * @param rawFormulae Formule mathématique ASCII brute (sans balises ``)
+   * @param outputFormulae Objet affiché, géneré par MathJax
+   * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormulae
+   */
+  async generateWrapper(rawFormulae: string, outputFormulae: string, shouldTypeset: boolean=false): Promise<HTMLSpanElement> {
+    const span = document.createElement('span')
+    span.contentEditable = "false"
+    span.className = "formulae"
+    if (shouldTypeset) {
+      // Call MathJax to build the formulae CHTML
+      const chtml: Node = await this.tex2chtml(rawFormulae)
+      // Generate wrapper
+      span.innerHTML = `<span class="rawFormulae">${rawFormulae}</span>`
+      const outputFormulaeEl = document.createElement('span')
+      outputFormulaeEl.className = "outputFormulae"
+      outputFormulaeEl.appendChild(chtml)
+      span.appendChild(outputFormulaeEl)
+    } else {
+      // Generate wrapper
+      span.innerHTML = `<span class="rawFormulae">${rawFormulae}</span>\
+  <span class="outputFormulae">${outputFormulae}</span>&nbsp;`
+    }
+
+    return span
   }
 
   // /**

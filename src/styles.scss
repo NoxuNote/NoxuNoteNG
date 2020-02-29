@@ -10,10 +10,15 @@ html, body {
   --note-background: #ffffff;
   --left-menu-background: #f0f0f0;
 }
-
-.hidden {
-  display: none;
+app-math-input {
+  position: absolute;
+  z-index: 2;
 }
 .rawFormulae {
   display: none;
 } 
+.outputFormulae, mjx-container[jax="CHTML"][display="true"] {
+  display: inline!important;
+  margin: 1em 0!important;
+  font-size: 1.1em;
+}

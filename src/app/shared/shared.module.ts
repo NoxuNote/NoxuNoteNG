@@ -11,6 +11,7 @@ import { BrowserComponent } from './components/browser/browser.component';
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
 import { NoteEditorComponent } from './components/note-editor/note-editor.component';
+import { MathInputComponent } from './components/math-input/math-input.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { NoteEditorComponent } from './components/note-editor/note-editor.compon
     PlatformComponent,
     BrowserComponent,
     NoteEditorComponent,
+    MathInputComponent,
   ],
   imports: [
     CommonModule,
