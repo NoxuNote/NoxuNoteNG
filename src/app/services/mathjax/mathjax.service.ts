@@ -34,6 +34,14 @@ export class MathjaxService {
   //   return el;
   // }
 
+  /**
+   * Determines if a formula is unwrapped in the input text
+   * @param t html
+   * @return true if a formula is present and needs to be wrapped
+   */
+  testUnwrappedFormula(t: string): boolean {
+    return t.search(/`([^\`]+)`/g) !== -1
+  }
 
   /**
    * Enveloppe les balises mathématiques inserées dans l'élément dans un wrapper (décrit plus bas) 

@@ -7,7 +7,7 @@ import { Note } from '../../../types/Note';
 import { IoService, StorageMode, MathjaxService } from "../../../services";
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
-import { saveCaretPosition } from "../../../types/staticTools"
+import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 
 @Component({
   selector: 'app-note-editor',
@@ -59,11 +59,17 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       left: '0px'
     },
     events: {
-      validate: () => this.math.style.display = 'none',
-      close: () => this.math.style.display = 'none',
-      rawFormulaeChange: ($event) => console.log($event)
+      validate: () => {
+        this.math.style.display = 'none'
+        this.typeset()
+      },
+      close: () => {
+        this.math.style.display = 'none'
+        this.typeset()
+      },
+      rawFormulaeChange: ($event) => console.log($event),
+      onFormulaClick: (formulae) => this.editFormulae(formulae)
     }
-
   } 
 
   /**
@@ -97,10 +103,18 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
         this.onChangeSubject.next()
         this.changesAreSaved = false
         const newBlockCount = this.editor.blocks.getBlocksCount()
+        /**
+         * When a block is added or merged with the block above
+         * the typeset disappears, so we need to check the current edited block every time.
+         */
         if (newBlockCount != this.blocksCount) {
-          const restore = saveCaretPosition(this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex()))
-          await this.typeset()
-          restore()
+          const currentBlock = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+          if (this._mjS.testUnwrappedFormula(currentBlock.innerHTML)) {
+            const restore = saveCaretPosition(currentBlock)
+            await this.typesetBlock(currentBlock)
+            restore()
+          }
+          this.bindOnFormulaClick(currentBlock)
           this.blocksCount = newBlockCount
         }
       }
@@ -130,14 +144,20 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
 
-  async popupMath() {
-    // Generate wrapper
-    const wrapper = await this._mjS.generateWrapper("", "")
-    console.log(wrapper);
+  async insertFormulae() {
+    // Create an empty wrapper and edit id
+    const wrapper = await this._mjS.generateWrapper("", "")    
+    insertNodeAtCursor(wrapper)
+    this.editFormulae(wrapper)
+  }
+
+  /**
+   * Ouvre la popup de modification de la formulae
+   * @param wrapper Element englobant la formule brute et la formule CHTML rendue par MathJax
+   */
+  editFormulae(wrapper: HTMLSpanElement) {   
     const rawFormulaeEl = wrapper.querySelector('.rawFormulae')
     const outputFormulaeEl = wrapper.querySelector('.outputFormulae')
-    
-    this.insertNodeAtCursor(wrapper)
     // Bind the new handler to math-input change
     this.math.events.rawFormulaeChange = ($event) => {
       rawFormulaeEl.innerHTML = $event
@@ -149,9 +169,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     this.math.style.display = "block" // Show the math-input component
-    this.math.rawFormulae = "" // reset raw formulae
-    // Get caret absolute coordinates and component offset coordinates
-    const [x, y] = this.getCaretCoordinates() 
+    this.math.rawFormulae = rawFormulaeEl.innerHTML // reset raw formulae
+    
+    // Get wrapper coordinates and component offset coordinates
+    const rect = wrapper.getBoundingClientRect()
+    const [x, y] = [rect.left+rect.width/2, wrapper.getBoundingClientRect().top]
     const [xComponentOffset, xComponentSize] = [this.container.nativeElement.getBoundingClientRect().left, this.container.nativeElement.clientWidth]
     // If the screen is too tigh and carret is close to left
     if (xComponentSize < 930 && (x-xComponentOffset) < 150) {
@@ -161,16 +183,12 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       this.math.notchOnLeft = false
       this.math.style.left = `${Math.round(x) - xComponentOffset - 150}px`
     }
-    this.math.style.top = `${Math.round(y) - 35}px`
-  }
-
-  getCaretCoordinates(): number[] {
-    const rect = window.getSelection().getRangeAt(0).getClientRects()[0]
-    return [rect.left, rect.top]
+    this.math.style.top = `${Math.round(y) - 45}px`
   }
 
   /**
    * Render maths
+   * Typesets ALL BLOCKS : 
    * Transforms every : $ \alpha $ 
    * To <span contenteditable="false" class="formulae">
    *      <span class="rawFormulae">\alpha</span>
@@ -179,27 +197,31 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   async typeset() {
     const count = this.editor.blocks.getBlocksCount()
-    // Wrap every $ \alpha $ into a span containing raw "|RAW| \alpha |/RAW|" and "|OUTPUT|$ \alpha $|/OUTPUT|" <- this one will be transformed 
     for (let i = 0; i < count; i++) {
       const block = this.editor.blocks.getBlockByIndex(i)
-      let editableElement = block.querySelector('[contenteditable="true"]')
-      editableElement = await this._mjS.wrap(editableElement, true)
+      if (this._mjS.testUnwrappedFormula(block.innerHTML)) this.typesetBlock(block)
     }
     this._mjS.clearAndUpdate()
+  }  
+
+  /**
+   * Typesets a specific editorjs block
+   * @param block An editor.js block
+   */
+  async typesetBlock(block: HTMLElement) {
+    let editableElement = block.querySelector('[contenteditable="true"]')
+    editableElement.replaceWith(await this._mjS.wrap(editableElement, true))
+    this.bindOnFormulaClick(block)
   }
 
-  insertNodeAtCursor(node: Node) {
-    // const block = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
-    // const editableElement = block.querySelector('[contenteditable="true"]')
-    let sel: Selection, range: Range;
-    if (window.getSelection) {
-      sel = window.getSelection();
-      if (sel.getRangeAt && sel.rangeCount) {
-        range = sel.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(node);
-      }
-    }
+  /**
+   * Re-binds the onClick formula handler on a block
+   * @param block An editor.js block
+   */
+  bindOnFormulaClick(block: HTMLElement) {
+    block.querySelectorAll('.formulae').forEach((formulae: HTMLSpanElement) => {
+      formulae.onmousedown = () => this.math.events.onFormulaClick(formulae)
+    })
   }
 
 }

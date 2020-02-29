@@ -70,3 +70,22 @@ export async function replaceAsync(str, regex, asyncFn) {
   const data = await Promise.all(promises);
   return str.replace(regex, () => data.shift());
 }
+
+export function insertNodeAtCursor(node: Node) {
+  // const block = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+  // const editableElement = block.querySelector('[contenteditable="true"]')
+  let sel: Selection, range: Range;
+  if (window.getSelection) {
+    sel = window.getSelection();
+    if (sel.getRangeAt && sel.rangeCount) {
+      range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(node);
+    }
+  }
+}
+
+export function getCaretCoordinates(): number[] {
+  const rect = window.getSelection().getRangeAt(0).getClientRects()[0]
+  return [rect.left, rect.top]
+}
