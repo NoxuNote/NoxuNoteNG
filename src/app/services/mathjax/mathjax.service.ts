@@ -41,19 +41,14 @@ export class MathjaxService {
   //   return el;
   // }
 
-  wrapBeforeTypeset(el: Element) {
-    console.log("WRAPPING content : ", el.cloneNode(true));
-    
-    el.innerHTML = el.innerHTML.replace(/`([^\`]+)`/g, (a, b) => {
-
+  wrapBeforeTypeset(el: Element) {    
+    el.innerHTML = el.innerHTML.replace(/`([^\`]+)`/g, (a, b) => 
       // a matches: $1/2$    and b matches the first capturing group: 1/2
-      return `<span contenteditable="false" class="formulae">
-          <span class="rawFormulae">${b}</span>
-          <span class="outputFormulae">${a}</span>
-        </span>`
-    }
+      `<span contenteditable="false" class="formulae">
+        <span class="rawFormulae">${b}</span>
+        <span class="outputFormulae">${a}</span>
+      </span>`
     )
-    console.log('returning el: ', el.cloneNode(true))
     return el;
   }
 

@@ -1,14 +1,12 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import EditorJS from '@editorjs/editorjs';
-import Header from '@editorjs/header';
-import List from '@editorjs/list';
-// import Paragraph from "@editorjs/paragraph";
+import List from './customTools/list';
 import Paragraph from "./customTools/paragraph";
+import Header from './customTools/header';
 import { Note } from '../../../types/Note';
 import { IoService, StorageMode, MathjaxService } from "../../../services";
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
-import { prepareSyntheticListenerFunctionName } from '@angular/compiler/src/render3/util';
 
 @Component({
   selector: 'app-note-editor',
@@ -17,7 +15,6 @@ import { prepareSyntheticListenerFunctionName } from '@angular/compiler/src/rend
 })
 export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorJs') el: ElementRef;
-  @ViewChild('test') testEl: ElementRef;
 
   /**
    * Input note
@@ -49,9 +46,6 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   constructor(private _ioS: IoService, private _mjS: MathjaxService) { }
 
   ngAfterViewInit() {
-
-
-
     this.editor = new EditorJS({
       holder: this.el.nativeElement,
       autofocus: true,
@@ -128,14 +122,15 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   /**
    * UNUSED
    */
-  async insertMath() {
-    const node = await this._mjS.tex2chtml('\\sqrt{x^2+1}', this.testEl.nativeElement)
-    setTimeout(() => {
-      console.log(node);
-      // (<Element> this.testEl.nativeElement).appendChild(node)
-      this.insertNodeAtCursor(node)
-      this._mjS.clearAndUpdate()
-    }, 1000);
+  async popupMath() {
+    const selection = this.saveSelection()
+    // const node = await this._mjS.tex2chtml('\\sqrt{x^2+1}', this.testEl.nativeElement)
+    // setTimeout(() => {
+    //   console.log(node);
+    //   // (<Element> this.testEl.nativeElement).appendChild(node)
+    //   this.insertNodeAtCursor(node)
+    //   this._mjS.clearAndUpdate()
+    // }, 1000);
   }
 
   /**
