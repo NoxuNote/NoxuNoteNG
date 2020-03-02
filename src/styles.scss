@@ -13,7 +13,13 @@ html, body {
 app-math-input {
   position: absolute;
   z-index: 2;
+  display: none;
 }
+app-math-input.math-input-shown {
+  display: block!important;
+  transition: all 0.2s ease-out;
+}
+
 .rawFormula {
   display: none;
 } 

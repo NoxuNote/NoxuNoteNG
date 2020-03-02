@@ -31,6 +31,7 @@ export class MathjaxService {
   //         <span class="hidden" name=_sanitized>|OUTPUT|</span>${a}<span class="hidden">|/OUTPUT|</span>
   //       </span>`
   //   )
+  //   )
   //   return el;
   // }
 

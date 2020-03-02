@@ -7,6 +7,7 @@
     (validate)="math.events.validate()"
     (close)="math.events.close()"
     [notchOnLeft]="math.notchOnLeft"
+    [ngClass]="{'math-input-shown': math.shown}"
     >
   </app-math-input>
   <button (click)="insertFormula()">insertMath</button>

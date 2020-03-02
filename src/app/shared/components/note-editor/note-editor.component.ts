@@ -7,16 +7,18 @@ import { IoService, StorageMode, MathjaxService } from "../../../services";
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
+import { MathInputComponent } from '../math-input/math-input.component';
+import { timingSafeEqual } from 'crypto';
 
 @Component({
   selector: 'app-note-editor',
   templateUrl: './note-editor.component.html',
-  styleUrls: ['./note-editor.component.scss']
+  styleUrls: ['./note-editor.component.scss'],
 })
 export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('container') container: ElementRef;
   @ViewChild('editorJs') editorContainer: ElementRef;
-  @ViewChild('mathInput') mathInput: ElementRef;
+  @ViewChild('mathInput') mathInput: MathInputComponent;
 
   /**
    * Input note
@@ -52,18 +54,18 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   math = {
     rawFormula: "",
     notchOnLeft: false,
+    shown: false,
     style: {
-      display: 'none',
       top: '0px',
       left: '0px'
     },
     events: {
       validate: () => {
-        this.math.style.display = 'none'
+        this.math.shown = false
         this.typeset()
       },
       close: () => {
-        this.math.style.display = 'none'
+        this.math.shown = false
         this.typeset()
       },
       rawFormulaChange: ($event) => console.log($event),
@@ -93,9 +95,17 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       * onReady callback
       */
       onReady: () => {
-        console.log('Editor.js is ready to work!')
         this.typeset()
-        console.log(Paragraph)
+        this.blocksCount = this.editor.blocks.getBlocksCount()
+        this.editor.on('click', (data)=>console.log(data))
+        // Hide the math input when the editor is clicked
+        this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
+          console.log((<Element> $event.target).tagName);
+          // If the target is not a mathjax element and math is shown
+          if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
+            this.math.shown = false
+          }
+        })
       },
       onChange: async () => {
         this.onChangeSubject.next()
@@ -167,7 +177,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       })
     }
 
-    this.math.style.display = "block" // Show the math-input component
+    this.math.shown = true
     this.math.rawFormula = rawFormulaEl.innerHTML // reset raw formula
     
     // Get wrapper coordinates and component offset coordinates
@@ -183,6 +193,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       this.math.style.left = `${Math.round(x) - xComponentOffset - 150}px`
     }
     this.math.style.top = `${Math.round(y) - 45}px`
+    this.mathInput.focus()
   }
 
   /**
