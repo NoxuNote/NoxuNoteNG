@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { replaceAsync } from "../../types/staticTools"
+import { replaceAsync, invisibleCharSpan, createSpan } from "../../types/staticTools"
 
 declare const MathJax: any;
 
@@ -22,18 +22,6 @@ export class MathjaxService {
     MathJax.startup.document.clear();
     MathJax.startup.document.updateDocument();
   }
-
-  // wrapBeforeTypeset(el: Element) {
-  //   el.innerHTML = el.innerHTML.replace(/`([^\$]+)`/g, (a, b) =>
-  //     // a matches: $1/2$    and b matches the first capturing group: 1/2
-  //     `<span contenteditable="false" name=_sanitized>
-  //         <span class="hidden" name=_sanitized>|RAW|${b}|/RAW|</span>
-  //         <span class="hidden" name=_sanitized>|OUTPUT|</span>${a}<span class="hidden">|/OUTPUT|</span>
-  //       </span>`
-  //   )
-  //   )
-  //   return el;
-  // }
 
   /**
    * Determines if a formula is unwrapped in the input text
@@ -67,45 +55,19 @@ export class MathjaxService {
    * @param shouldTypeset true si la formule doit être transformée par Mathjax dans outputFormula
    */
   async generateWrapper(rawFormula: string, outputFormula: string, shouldTypeset: boolean=false): Promise<HTMLSpanElement> {
-    const span = document.createElement('span')
+    const span = createSpan('', 'formula')
     span.contentEditable = "false"
-    span.className = "formula"
+    span.innerHTML = invisibleCharSpan().outerHTML + `<span class="rawFormula">${rawFormula}</span>`
     if (shouldTypeset) {
-      // Call MathJax to build the formula CHTML
-      const chtml: Node = await this.tex2chtml(rawFormula)
-      // Generate wrapper
-      span.innerHTML = `<span class="rawFormula">${rawFormula}</span>`
-      const outputFormulaEl = document.createElement('span')
-      outputFormulaEl.className = "outputFormula"
-      outputFormulaEl.appendChild(chtml)
-      span.appendChild(outputFormulaEl)
+      const chtml: Node = await this.tex2chtml(rawFormula) // Call MathJax to build the formula CHTML
+      const outputEl = createSpan('', 'outputFormula')
+      outputEl.appendChild(chtml)
+      span.appendChild(outputEl)
     } else {
-      // Generate wrapper
-      span.innerHTML = `<span class="rawFormula">${rawFormula}</span>\
-  <span class="outputFormula">${outputFormula}</span>&nbsp;`
+      span.appendChild(createSpan(outputFormula, 'outputFormula'))
     }
-
+    span.appendChild(invisibleCharSpan())
     return span
   }
-
-  // /**
-  //  * 
-  //  * @param blocks Editor.JS blocks save output
-  //  */
-  // unwrapOutput(out: OutputData): OutputData {
-  //   out.blocks.forEach(b => {
-  //     if (["paragraph", "header"].includes(b.type)) {
-  //       // remove RAW tags
-  //       b.data["text"] = b.data["text"].replace(/\|RAW\|([\s\S]*)\|\/RAW\|/g, (a, b) => "`" + b + "`")
-  //       // remove OUTPUT
-  //       b.data["text"] = b.data["text"].replace(/\|OUTPUT\|([\s\S]*)\|\/OUTPUT\|/g, '')
-  //       // remove \n
-  //       b.data["text"] = b.data["text"].replace(/\n/g, '')
-  //       // remove double whitespaces
-  //       b.data["text"] = b.data["text"].replace(/[\s]{2,}/g, ' ')
-  //     }
-  //   })
-  //   return out
-  // }
 
 }

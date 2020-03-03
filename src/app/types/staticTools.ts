@@ -1,14 +1,6 @@
-
-export function saveSelection() {
-  if (window.getSelection) {
-    const sel = window.getSelection();
-    if (sel.getRangeAt && sel.rangeCount) {
-      return sel.getRangeAt(0);
-    }
-  }
-  return null;
-}
-
+/**
+ * G pas compris cette fonction
+ */
 export function getTextNodeAtPosition(root, index) {
   var lastNode = null;
   const nodeFilter: NodeFilter = {
@@ -28,6 +20,9 @@ export function getTextNodeAtPosition(root, index) {
     position: c ? index : 0
   };
 }
+/**
+ * Renvoie une fonction qui lorsqu'elle est appelée, restaure la position du curseur
+ */
 export function saveCaretPosition(context) {
   var selection = window.getSelection();
   var range = selection.getRangeAt(0);
@@ -41,17 +36,6 @@ export function saveCaretPosition(context) {
     range.setStart(pos.node, pos.position);
     selection.addRange(range);
 
-  }
-}
-
-export function restoreSelection(range) {
-  if (range) {
-    if (window.getSelection) {
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-
-    }
   }
 }
 
@@ -71,6 +55,10 @@ export async function replaceAsync(str, regex, asyncFn) {
   return str.replace(regex, () => data.shift());
 }
 
+/**
+ * Insère le noeud fourni en paramètre à l'emplacement du curseur
+ * @param node Un noeud HTML
+ */
 export function insertNodeAtCursor(node: Node) {
   // const block = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
   // const editableElement = block.querySelector('[contenteditable="true"]')
@@ -85,7 +73,31 @@ export function insertNodeAtCursor(node: Node) {
   }
 }
 
+/**
+ * Renvoie les coordonnées du curseur texte (caret)
+ */
 export function getCaretCoordinates(): number[] {
   const rect = window.getSelection().getRangeAt(0).getClientRects()[0]
   return [rect.left, rect.top]
+}
+
+/**
+ * Génère un span contenant un point invisible
+ */
+export function invisibleCharSpan(): HTMLSpanElement {
+  return createSpan('.', '', [{style:'opacity', value:'0'}])
+}
+
+/**
+ * Crée un span avec les paramètres fournis
+ * @param content Contenu de la span (innerText)
+ * @param className Classes CSS, séparées par un espace
+ * @param styles Liste d'objets définissant une proprieté de style ex: [{'style':'color', 'value':'red'}]
+ */
+export function createSpan(content: string, className: string, styles: {style: string, value: string|number}[] = []): HTMLSpanElement {
+  const span = document.createElement('span')
+  span.innerText = content
+  if(className.length) span.className = className
+  styles.forEach(s => span.style[s.style] = s.value)
+  return span
 }
