@@ -27,13 +27,17 @@
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/mathjax/es5/",
+                "output": "/mathjax/"
               }
             ],
             "styles": [
               "src/styles.scss",
               "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
             ],
-            "scripts": [],
             "customWebpackConfig": {
               "path": "./angular.webpack.js"
             }

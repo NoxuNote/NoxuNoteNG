@@ -1,0 +1,21 @@
+<div id="element">
+  <div id="container">
+    <input 
+      #rawInput
+      id="rawFormulaInput"
+      nz-input 
+      nzSize="small"
+      type="text" 
+      [(ngModel)]="rawFormula" 
+      (ngModelChange)="rawFormulaChange.emit(rawFormula)"
+      placeholder="\frac{1}{\alpha}..."
+      >
+    <button nz-button nzType="primary" nzSize="small" (click)="validate.emit()">
+      <i nz-icon nzType="check" nzTheme="outline"></i>
+    </button>
+    <button nz-button nzType="danger" nzSize="small" (click)="close.emit()">
+      <i nz-icon nzType="close" nzTheme="outline"></i>
+    </button>
+  </div>
+  <div class="notch {{ notchOnLeft? 'notch-left' : 'notch-center' }}"></div>
+</div>
