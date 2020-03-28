@@ -4,14 +4,15 @@ import { StorageMode } from './StorageMode';
 import { LocalNoteDriverService } from './localDrivers/local-note-driver.service';
 import { NoteMetadata } from '../../types/NoteMetadata';
 import { Note } from '../../types/Note';
+import { Folder } from '../../types/Folder';
+import { LocalFolderDriverService } from './localDrivers/local-folder-driver.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class IoService {
-
-  constructor(private _localNoteDriverService: LocalNoteDriverService) { }
+  constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService) { }
 
   public getNote(source: StorageMode, uuid: string): Observable<Note> {
     switch (source) {
@@ -31,10 +32,28 @@ export class IoService {
     }
   }
 
+  public getFolders(source: StorageMode): Observable<Folder[]> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localFolderDriverService.getListFolders()    
+      case StorageMode.Cloud:
+        return of(null)
+    }
+  }
+ 
   public updateNotes(source: StorageMode) {
     switch (source) {
       case StorageMode.Local:
         this._localNoteDriverService.refreshListNotes()
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+  updateFolders(source: StorageMode) {
+    switch (source) {
+      case StorageMode.Local:
+        this._localFolderDriverService.refreshListFolders()
       case StorageMode.Cloud:
         return
     }

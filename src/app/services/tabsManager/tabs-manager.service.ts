@@ -10,6 +10,9 @@ import { Note } from '../../types/Note';
 })
 export class TabsManagerService {
 
+  _editedNoteUuid: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  readonly editedNoteObservable: Observable<string> = this._editedNoteUuid.asObservable()
+
   _openedNotes: BehaviorSubject<NoteTab[]> = new BehaviorSubject<NoteTab[]>([])
   readonly openedNotesObservable: Observable<NoteTab[]> = this._openedNotes.asObservable()
 
@@ -59,5 +62,12 @@ export class TabsManagerService {
     tabs.splice(index, 1)
     this._openedNotes.next(tabs)
   } 
+
+  /**
+   * Permet au note-tabs component d'informer le manager que le client a changé d'onglet
+   */
+  public informTabChange(uuid: string) {
+    this._editedNoteUuid.next(uuid)
+  }
 
 }

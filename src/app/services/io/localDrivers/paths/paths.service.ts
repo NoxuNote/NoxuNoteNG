@@ -16,7 +16,7 @@ export class PathsService {
     return this._elS.path.join(this.getNoxuNoteDir(), 'notes')
   }
 
-  private getNoxuNoteDir(): string {
+  public getNoxuNoteDir(): string {
     return this._elS.path.join(this._elS.os.homedir(), 'NoxuNoteNG')
   }
 

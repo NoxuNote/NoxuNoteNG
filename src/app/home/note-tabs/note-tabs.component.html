@@ -6,7 +6,7 @@
   </p-tabView>
 </div> -->
 <div>
-  <nz-tabset [(nzSelectedIndex)]="selectedIndex">
+  <nz-tabset [(nzSelectedIndex)]="selectedIndex" (nzSelectChange)="tabChange($event)">
     <nz-tab *ngFor="let tab of tabs ; let i = index" [attr.data-uuid]="tab.savedNote.meta.uuid" [nzTitle]="titleTemplate">
       <ng-template #titleTemplate>
         <div>

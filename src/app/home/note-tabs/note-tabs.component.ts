@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, EventEmitter } from '@angular/core';
 import { TabsManagerService } from '../../services/tabsManager/tabs-manager.service';
 import { NoteTab } from '../../services/tabsManager/NoteTab';
 import { Subscription } from 'rxjs';
+import { NzTabComponent } from 'ng-zorro-antd/tabs/public-api';
 
 @Component({
   selector: 'app-note-tabs',
@@ -43,6 +44,9 @@ export class NoteTabsComponent implements OnInit, OnDestroy {
     this._tmS.close(tab.savedNote.meta.uuid)
     // Call Angular to check for updates in children to avoid ExpressionChangedAfterItHasBeenCheckedError
     // this.cd.detectChanges() 
+  }
+  tabChange($event) {
+    this._tmS.informTabChange(this.tabs[$event.index].savedNote.meta.uuid);
   }
 
 }

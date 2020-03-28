@@ -1,30 +1,43 @@
+import { JsonObject, JsonProperty, Any } from "json2typescript";
 import { NoteMetadata } from "./NoteMetadata";
 
-export type Folder = {
+@JsonObject("Folder")
+export class Folder {
   /**
    * Unique identifier of the folder (UUID)
    */
-  uuid: string,
+  @JsonProperty("uuid", String)
+  uuid: string = undefined;
   /**
    * Title of the folder
    */
-  title: string,
+  @JsonProperty("title", String)
+  title: string = undefined;
   /**
    * Color of the folder
    */
-  color: string,
+  @JsonProperty("color", String)
+  color: string = undefined;
   /**
    * Folder description, wrote by the user
    */
-  description: string
+  @JsonProperty("description", String)
+  description: string = undefined;
+
   /**
-   * Notes referenced in this folder
-   * in storage, this data is stored as uuid of the note
+   * Notes in this folder
    */
-  notes: NoteMetadata[]
+  @JsonProperty("noteUUIDs", [String])  
+  noteUUIDs: String[] = []
   /**
    * UUID of parent folder
    * /!\ MAY BE UNDEFINED
    */
-  parentFolder?: string,
+  @JsonProperty("parentFolder", String)
+  parentFolder: string = undefined;
+  /**
+   * Other stored metadata (from plugins, extensions, preferences..)
+   */
+  @JsonProperty("data", Any)
+  data: {} = undefined;
 }
