@@ -14,6 +14,12 @@ import { LocalFolderDriverService } from './localDrivers/local-folder-driver.ser
 export class IoService {
   constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService) { }
 
+  /*
+   *
+   * ------------- NOTES -------------
+   * 
+   */
+
   public getNote(source: StorageMode, uuid: string): Observable<Note> {
     switch (source) {
       case StorageMode.Local:
@@ -23,7 +29,7 @@ export class IoService {
     }
   }
 
-  public getNotes(source: StorageMode): Observable<NoteMetadata[]> {
+  public getListNotes(source: StorageMode): Observable<NoteMetadata[]> {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.getListNotes()
@@ -31,34 +37,6 @@ export class IoService {
         return of(null)
     }
   }
-
-  public getFolders(source: StorageMode): Observable<Folder[]> {
-    switch (source) {
-      case StorageMode.Local:
-        return this._localFolderDriverService.getListFolders()    
-      case StorageMode.Cloud:
-        return of(null)
-    }
-  }
- 
-  public updateNotes(source: StorageMode) {
-    switch (source) {
-      case StorageMode.Local:
-        this._localNoteDriverService.refreshListNotes()
-      case StorageMode.Cloud:
-        return
-    }
-  }
-
-  updateFolders(source: StorageMode) {
-    switch (source) {
-      case StorageMode.Local:
-        this._localFolderDriverService.refreshListFolders()
-      case StorageMode.Cloud:
-        return
-    }
-  }
-
   public saveNote(source: StorageMode, note: Note): Promise<NoteMetadata> {
     switch (source) {
       case StorageMode.Local:
@@ -67,5 +45,39 @@ export class IoService {
         return
     }
   }
+
+  public refreshListNotes(source: StorageMode) {
+    switch (source) {
+      case StorageMode.Local:
+        this._localNoteDriverService.refreshListNotes()
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+  /*
+   *
+   * ------------- FOLDERS -------------
+   * 
+   */
+
+  public getListFolders(source: StorageMode): Observable<Folder[]> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localFolderDriverService.getListFolders()
+      case StorageMode.Cloud:
+        return of(null)
+    }
+  }
+
+  refreshListFolders(source: StorageMode) {
+    switch (source) {
+      case StorageMode.Local:
+        this._localFolderDriverService.refreshListFolders()
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
 
 }

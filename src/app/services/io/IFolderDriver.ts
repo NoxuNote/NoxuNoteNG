@@ -16,4 +16,26 @@ export interface IFolderDriver {
    */
   refreshListFolders()
 
+  /**
+   * Sauvegarde la liste des dossiers en cache dans le stockage
+   */
+  saveListFolders(): Promise<void>
+
+  /**
+   * Crée un dossier dans le cache
+   * @param name Nom du dossier
+   * @param parentId ID du parent
+   */
+  createFolder(name: string, parentId?: string): Folder
+
+  /**
+   * Met à jour les données d'un dossier en cache
+   */
+  updateFolder(f: Folder)
+
+  /**
+   * Supprime récursivement un dossier en cache mais pas les notes qu'il contient
+   */
+  removeFolder(f: Folder) 
+
 }

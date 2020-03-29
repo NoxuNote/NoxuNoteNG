@@ -51,13 +51,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Automatically fetch noteList with debounce to prevent generateTree overcalls
-    this.subscribtions.push(this._ioS.getNotes(this._source).pipe(debounce(() => timer(20))).subscribe(metas => {
+    this.subscribtions.push(this._ioS.getListNotes(this._source).pipe(debounce(() => timer(20))).subscribe(metas => {
       this._notes = metas
       this.generateTree()
     }))
     this.updateNoteList()
     // Automatically fetch folder list
-    this.subscribtions.push(this._ioS.getFolders(this._source).subscribe(folders => {
+    this.subscribtions.push(this._ioS.getListFolders(this._source).subscribe(folders => {
       this._folders = folders
       this.generateTree()
     }))
@@ -101,10 +101,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Calls the IoService to re-fetch notes metadatas from source
    */
   public updateNoteList() {
-    this._ioS.updateNotes(this._source)
+    this._ioS.refreshListNotes(this._source)
   }
   public updateFolderList() {
-    this._ioS.updateFolders(this._source)
+    this._ioS.refreshListFolders(this._source)
   }
 
   nzEvent(event: NzFormatEmitEvent): void {
