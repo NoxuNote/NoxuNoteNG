@@ -7,10 +7,11 @@
     <i nz-icon nzType="search"></i>
   </ng-template>
   <nz-tree 
+    #nzTree 
+    nzNoAnimation
     [nzData]="nodes" 
     [nzSearchValue]="searchValue"
     nzDraggable
-    (nzOnDrop)="nzEvent($event)" 
     (nzClick)="activeNode($event)"
     (nzContextMenu)="selectNode($event)"
     [nzSelectedKeys]="[selectedKey]"
@@ -27,12 +28,12 @@
         [class.folder]="node.origin.isFolder"
         (contextmenu)="contextMenu($event, node)">
       <span *ngIf="node.origin.isRoot; else notRoot">
-        <i nz-icon [nzType]="node.origin.key=='local_root' ? 'desktop' : 'global'" (click)="openFolder(node)"></i>
+        <i nz-icon [nzType]="node.origin.key=='local_root' ? 'desktop' : 'global'"></i>
         <span class="folder-name">{{ node.title }}</span>
       </span>
       <ng-template #notRoot>
         <span *ngIf="node.origin.isFolder">
-          <i nz-icon nzTheme="fill" [nzType]="node.isExpanded ? 'folder-open' : 'folder'" (click)="openFolder(node)"></i>
+          <i nz-icon nzTheme="fill" [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
           <span class="folder-name">{{ node.title }}</span>
         </span>
         <span *ngIf="!node.origin.isFolder">
@@ -43,15 +44,15 @@
     </span>
   </ng-template>
   <!-- Clic droit sur un dossier -->
-  <nz-dropdown-menu #foldermenu="nzDropdownMenu"  >
+  <nz-dropdown-menu #foldermenu="nzDropdownMenu">
     <ul nz-menu>
-      <li nz-menu-item (click)="selectDropdown()">
+      <li nz-menu-item>
         <i nz-icon nzType="file-add"></i> Nouvelle note
       </li>
-      <li nz-menu-item (click)="selectDropdown()">
+      <li nz-menu-item (click)="newFolder()">
         <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
       </li>
-      <li nz-menu-item (click)="selectDropdown()" class="delete">
+      <li nz-menu-item (click)="removeFolder()" class="delete">
         <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
       </li>
     </ul>
@@ -59,10 +60,10 @@
   <!-- Clic droit sur une note -->
   <nz-dropdown-menu #notemenu="nzDropdownMenu">
     <ul nz-menu>
-      <li nz-menu-item (click)="selectDropdown()">
+      <li nz-menu-item>
         <i nz-icon nzType="edit"></i> Renommer
       </li>
-      <li nz-menu-item (click)="selectDropdown()" class="delete">
+      <li nz-menu-item class="delete">
         <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
       </li>
     </ul>
@@ -72,6 +73,9 @@
     <ul nz-menu>
       <li nz-menu-item (click)="updateNoteList()">
         <i nz-icon nzType="reload"></i> Rafraîchir
+      </li>
+      <li nz-menu-item (click)="newFolder(true)">
+        <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
       </li>
     </ul>
   </nz-dropdown-menu>

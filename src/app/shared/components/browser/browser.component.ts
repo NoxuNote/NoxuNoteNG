@@ -4,7 +4,7 @@ import { Subscription, Observable, timer } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
-import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService } from 'ng-zorro-antd';
+import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
 import { ThrowStmt } from '@angular/compiler';
 import { debounce } from 'rxjs/operators';
@@ -19,11 +19,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
   @ViewChild('foldermenu') folderMenu: NzDropdownMenuComponent;
   @ViewChild('notemenu') noteMenu: NzDropdownMenuComponent;
   @ViewChild('rootmenu') rootMenu: NzDropdownMenuComponent;
+  @ViewChild('nzTree') nzTree: NzTreeComponent;
   
   /**
    * Noeuds de l'arbre de navigation
    */
   nodes: NzTreeNodeOptions[] = [];
+
   /**
    * Noeud actif
    */
@@ -77,6 +79,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * @param folders Liste des dossiers
    */
   private generateTree() {
+    // Mémoriser quels dossiers étaient ouverts
+    let openedFoldersId: string[] = []
+    if (this.nzTree) {
+      openedFoldersId = this.nzTree.getExpandedNodeList().map(node=>node.key)
+      console.debug("Mémorisation des dossiers ouverts : ", openedFoldersId);
+    }
     // Création d'un noeud racine
     let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root");
     let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root");
@@ -87,10 +95,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
       if (f.parentFolder == undefined) {
         // Création et insertion du noeud
         let noRootNode = TreeTools.createFolderNode(f)
+        // Si le noeud était ouvert, on le réouvre
+        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
         localRoot.children.push(noRootNode)
         // Insertion de ses enfants
         // folders.splice(index, 1) // element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, this._folders, this._notes)
+        TreeTools.insertChildren(noRootNode, f, this._folders, this._notes, openedFoldersId)
       }
     })
     console.debug(this.nodes)
@@ -110,10 +120,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._ioS.refreshListFolders(this._source)
   }
 
-  nzEvent(event: NzFormatEmitEvent): void {
-    console.log(event);
-  }
-
+  /**
+   * Expand a folder on double click
+   */
   openFolder(data: NzTreeNode | Required<NzFormatEmitEvent>): void {
     // do something if u want
     if (data instanceof NzTreeNode) {
@@ -126,6 +135,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Triggered when user left-clicks on a tree node
+   * @param data Tree Node event emitter
+   */
   activeNode(data: NzFormatEmitEvent): void {
     // Close contextual menu
     this._nzContextMenuService.close()
@@ -137,10 +150,19 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Set a node selected
+   * @param data Tree Node event emitter
+   */
   selectNode(data: NzFormatEmitEvent): void {
     this.selectedKey = data.node.key
   }
 
+  /**
+   * Calls service to open context menu
+   * @param $event click event
+   * @param node Clicked tree node
+   */
   contextMenu($event: MouseEvent, node: NzTreeNode): void {
     // this._nzContextMenuService.create($event, menu);
     if (node.origin.isFolder) {
@@ -154,12 +176,27 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  selectDropdown(): void {
-    // do something
-  }
-
+  /**
+   * Calls tabsManagerService to open a note
+   * @param uuid Note uuid
+   */
   openNote(uuid: string) {
     this._tmS.open(uuid);
   }
 
+/***************************************************************************************************
+ *                                       CONTEXTUAL MENU                                           *
+ ***************************************************************************************************/
+
+  newFolder(atRoot: boolean = false) {
+    // Si le dossier sélectionné est fermé, on l'ouvre
+    this.nzTree.getSelectedNodeList()[0].setExpanded(true)
+    let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
+    this.selectedKey = newFolder.uuid
+    console.log(newFolder);
+  }
+
+  removeFolder() {
+    this._ioS.removeFolder(StorageMode.Local, this._folders.find(f=>f.uuid==this.selectedKey))
+  }
 }

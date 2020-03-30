@@ -79,5 +79,40 @@ export class IoService {
     }
   }
 
+  saveListFolders(source: StorageMode): Promise<void> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localFolderDriverService.saveListFolders()
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+  createFolder(source: StorageMode, name: string, parentId?: string): Folder {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localFolderDriverService.createFolder(name, parentId)
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+  updateFolder(source: StorageMode, f: Folder) {
+    switch (source) {
+      case StorageMode.Local:
+        this._localFolderDriverService.updateFolder(f)
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+  removeFolder(source: StorageMode, f: Folder) {
+    switch (source) {
+      case StorageMode.Local:
+        this._localFolderDriverService.removeFolder(f)
+      case StorageMode.Cloud:
+        return
+    }
+  }
 
 }

@@ -44,6 +44,7 @@ export class LocalFolderDriverService implements IFolderDriver {
   }
 
   removeFolder(f: Folder) {
+    if (!f) return
     // Suppression des enfants
     this._listFoldersSubject.getValue().forEach(folder => {
       if (folder.parentFolder == f.uuid) {
