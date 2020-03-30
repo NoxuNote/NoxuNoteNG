@@ -9,6 +9,7 @@ import { debounceTime } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { timingSafeEqual } from 'crypto';
+import { NzContextMenuService } from 'ng-zorro-antd';
 
 @Component({
   selector: 'app-note-editor',
@@ -79,7 +80,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   blocksCount: number = 0;
 
-  constructor(private _ioS: IoService, private _mjS: MathjaxService, private resolver: ComponentFactoryResolver) { }
+  constructor(private _ioS: IoService, private _mjS: MathjaxService, private _nzContextMenuService: NzContextMenuService) { }
 
   ngAfterViewInit() {
     this.editor = new EditorJS({
@@ -100,11 +101,12 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
         this.editor.on('click', (data)=>console.log(data))
         // Hide the math input when the editor is clicked
         this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
-          console.log((<Element> $event.target).tagName);
           // If the target is not a mathjax element and math is shown
           if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
             this.math.shown = false
           }
+          // If a contextual menu is open, close it
+          this._nzContextMenuService.close()
         })
       },
       onChange: async () => {

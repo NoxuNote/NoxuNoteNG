@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService } from '../../../services';
 import { Subscription, Observable, timer } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
@@ -16,6 +16,9 @@ import { TreeTools } from './TreeTools';
   styleUrls: ['./browser.component.scss']
 })
 export class BrowserComponent implements OnInit, OnDestroy {
+  @ViewChild('foldermenu') folderMenu: NzDropdownMenuComponent;
+  @ViewChild('notemenu') noteMenu: NzDropdownMenuComponent;
+  @ViewChild('rootmenu') rootMenu: NzDropdownMenuComponent;
   
   /**
    * Noeuds de l'arbre de navigation
@@ -123,19 +126,32 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Lors du clic sur un élément
-   */
   activeNode(data: NzFormatEmitEvent): void {
-    this.selectedKey = data.node.key;
+    // Close contextual menu
+    this._nzContextMenuService.close()
+    // Select element
+    this.selectNode(data)
     // Si il s'agit d'une note ou l'ouvre
     if (!data.node.origin.isFolder && !data.node.origin.isRoot) {
       this.openNote(data.node.key)
     }
   }
 
-  contextMenu($event: MouseEvent, menu: NzDropdownMenuComponent): void {
-    this._nzContextMenuService.create($event, menu);
+  selectNode(data: NzFormatEmitEvent): void {
+    this.selectedKey = data.node.key
+  }
+
+  contextMenu($event: MouseEvent, node: NzTreeNode): void {
+    // this._nzContextMenuService.create($event, menu);
+    if (node.origin.isFolder) {
+      if (node.origin.isRoot) {
+        this._nzContextMenuService.create($event, this.rootMenu)
+      } else {
+        this._nzContextMenuService.create($event, this.folderMenu)
+      }
+    } else {
+      this._nzContextMenuService.create($event, this.noteMenu)
+    }
   }
 
   selectDropdown(): void {
