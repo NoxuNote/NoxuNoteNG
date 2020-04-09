@@ -31,7 +31,7 @@ export class Folder {
   noteUUIDs: String[] = []
   /**
    * UUID of parent folder
-   * /!\ MAY BE UNDEFINED
+   * /!\ MAY BE NULL
    */
   @JsonProperty("parentFolder", String)
   parentFolder: string = undefined;

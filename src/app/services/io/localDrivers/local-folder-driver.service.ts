@@ -24,12 +24,13 @@ export class LocalFolderDriverService implements IFolderDriver {
       color: "#FFFFFF",
       description: "",
       noteUUIDs: [],
-      parentFolder: parentId,
+      parentFolder: parentId? parentId : null,
       data: {}
     })
     this.addFolderToCache(f)
     return f
   }
+  
   updateFolder(f: Folder) {
     // Récupération du cache
     let currentCache: Folder[] = this._listFoldersSubject.getValue()
