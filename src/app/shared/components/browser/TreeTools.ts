@@ -49,25 +49,21 @@ export class TreeTools {
    */
   static insertChildren = (node: NzTreeNodeOptions, parent: Folder, allFolders: Folder[], allNotes: NoteMetadata[], expandedNodelist: string[]) => {
     // Folder insertion
-    let hasChildren = false
     allFolders.forEach((f, index) => {
       if (f.parentFolder != undefined && f.parentFolder == parent.uuid) {
         // Création et insertion du noeud
         let newNode = TreeTools.createFolderNode(f)
-        console.log("isEXPANDED ???", node, expandedNodelist.includes(newNode.key))
         newNode.expanded = expandedNodelist.includes(newNode.key)
         node.children.push(newNode)
         // Insertion de ses enfants
-        // folders.splice(index, 1) // element is treated, remove it from list
+        // allFolders.splice(index, 1) // element is treated, remove it from list
         TreeTools.insertChildren(newNode, f, allFolders, allNotes, expandedNodelist)
-        hasChildren = true
       }
     })
     // Notes insertion
     allNotes.forEach(note => {
       if (parent.noteUUIDs.includes(note.uuid)) {
         node.children.push(TreeTools.createNoteNode(note))
-        hasChildren = true
       }
     })
   }

@@ -15,7 +15,6 @@
     (nzClick)="activeNode($event)"
     (nzContextMenu)="selectNode($event)"
     [nzSelectedKeys]="[selectedKey]"
-    (nzDblClick)="openFolder($event)"
     [nzTreeTemplate]="nzTreeTemplate">
   </nz-tree>
   <ng-template #nzTreeTemplate let-node>

@@ -66,7 +66,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
       this._folders = folders
       this.generateTree()
     }))
-    this.updateFolderList()
+    this._ioS.refreshListFolders(this._source)
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
       console.debug("selecting " + uuid)
@@ -83,7 +83,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
     let openedFoldersId: string[] = []
     if (this.nzTree) {
       openedFoldersId = this.nzTree.getExpandedNodeList().map(node=>node.key)
-      console.debug("Mémorisation des dossiers ouverts : ", openedFoldersId);
     }
     // Création d'un noeud racine
     let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root");
@@ -91,7 +90,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Nettoyer l'arbre
     this.nodes = [localRoot, cloudRoot]
     // Pour chaque élément sans racine
-    this._folders.forEach((f,index)=>{
+    let folders: Folder[] = [...this._folders] // copie des dossiers
+    folders.forEach((f,index)=>{
+      console.log('foreach premier', folders.length);
       if (f.parentFolder == undefined) {
         // Création et insertion du noeud
         let noRootNode = TreeTools.createFolderNode(f)
@@ -99,11 +100,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
         noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
         localRoot.children.push(noRootNode)
         // Insertion de ses enfants
-        // folders.splice(index, 1) // element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, this._folders, this._notes, openedFoldersId)
+        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
+        TreeTools.insertChildren(noRootNode, f, folders, this._notes, openedFoldersId)
       }
     })
-    console.debug(this.nodes)
+    console.log("dossiers", this._folders);
+    
   }
   
   ngOnDestroy() {
@@ -115,9 +117,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   public updateNoteList() {
     this._ioS.refreshListNotes(this._source)
-  }
-  public updateFolderList() {
-    this._ioS.refreshListFolders(this._source)
   }
 
   /**
@@ -144,8 +143,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._nzContextMenuService.close()
     // Select element
     this.selectNode(data)
-    // Si il s'agit d'une note ou l'ouvre
-    if (!data.node.origin.isFolder && !data.node.origin.isRoot) {
+    // Si il s'agit d'un dossier, on l'ouvre
+    if (data.node.origin.isFolder) {
+      this.openFolder(data.node)
+    } else {
+      // Si il s'agit d'une note ou l'ouvre
       this.openNote(data.node.key)
     }
   }
@@ -189,8 +191,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
  ***************************************************************************************************/
 
   newFolder(atRoot: boolean = false) {
+    console.log("Création d'un dossier : ", this.nzTree.getSelectedNodeList()[0]);
+    
     // Si le dossier sélectionné est fermé, on l'ouvre
-    this.nzTree.getSelectedNodeList()[0].setExpanded(true)
+    this.nzTree.getSelectedNodeList()[0].isExpanded = true
     let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
     this.selectedKey = newFolder.uuid
     console.log(newFolder);
