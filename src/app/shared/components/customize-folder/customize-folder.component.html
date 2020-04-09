@@ -1,0 +1,19 @@
+<div>
+  <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
+  
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="title">Titre</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="Le titre est invalide.">
+        <input nz-input formControlName="title" id="title" #title/>
+      </nz-form-control>
+    </nz-form-item>
+  
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="description">Description</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24" nzErrorTip="La description est invalide">
+        <input nz-input formControlName="description" id="description" />
+      </nz-form-control>
+    </nz-form-item>
+  
+  </form>
+</div>

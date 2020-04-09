@@ -4,11 +4,12 @@ import { Subscription, Observable, timer } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
-import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent } from 'ng-zorro-antd';
+import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
 import { ThrowStmt } from '@angular/compiler';
 import { debounce } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
+import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
 
 @Component({
   selector: 'app-browser',
@@ -31,7 +32,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   selectedKey: string
 
-  constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService) { }
+  constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
+    private _modalService: NzModalService) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
@@ -186,6 +188,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._tmS.open(uuid);
   }
 
+  /**
+   * Returns the selected folder, undefined otherwise
+   */
+  getSelectedFolder(): Folder {
+    return this._folders.find(f=>f.uuid==this.selectedKey)
+  }
+
 /***************************************************************************************************
  *                                       CONTEXTUAL MENU                                           *
  ***************************************************************************************************/
@@ -194,9 +203,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   * Crée un dossier avec pour parent le dossier sélectionné
   * @param atRoot Le dossier crée est il dans un noeud racine
   */
-  async newFolder(atRoot: boolean = false) {
-    console.log("Création d'un dossier : ", this.nzTree.getSelectedNodeList()[0]);
-    
+  async newFolder(atRoot: boolean = false) {    
     // Si le dossier sélectionné est fermé, on l'ouvre
     this.nzTree.getSelectedNodeList()[0].isExpanded = true
     let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
@@ -209,8 +216,41 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Supprime le dossier sélectionné
    */
   async removeFolder() {
-    this._ioS.removeFolder(StorageMode.Local, this._folders.find(f=>f.uuid==this.selectedKey))
+    this._ioS.removeFolder(StorageMode.Local, this.getSelectedFolder())
     // Sauvegarde des changements
     await this._ioS.saveListFolders(StorageMode.Local)
   }
+
+/***************************************************************************************************
+ *                                       FOLDER MODIFICATION                                       *
+ ***************************************************************************************************/
+
+  /**
+   * Ouvre le menu de modification pour le dossier sélectionné
+   */
+  editFolder() {
+    let f: Folder = this.getSelectedFolder()
+    const modal = this._modalService.create({
+      nzTitle: `Modifier <b>${f.title}</b>`,
+      nzContent: CustomizeFolderComponent,
+      nzComponentParams: {
+        inputFolder: f
+      },
+      nzFooter: [
+        {
+          label: 'Valider',
+          onClick: componentInstance => componentInstance.trySubmitForm()
+        }
+      ]
+    })
+    modal.afterClose.subscribe( (result: Folder) => {
+      if (result) {
+        // Updating folder data
+        this._ioS.updateFolder(StorageMode.Local, result)
+        // Saving changes
+        this._ioS.saveListFolders(StorageMode.Local)
+      }
+    })
+  }
+
 }

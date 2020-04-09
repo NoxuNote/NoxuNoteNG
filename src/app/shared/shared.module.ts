@@ -3,15 +3,12 @@ import { CommonModule } from '@angular/common';
 
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PageNotFoundComponent, PlatformComponent } from './components/';
+import { PageNotFoundComponent, PlatformComponent, BrowserComponent, NoteEditorComponent, MathInputComponent, CustomizeFolderComponent, CustomizeNoteComponent } from './components/';
 import { WebviewDirective } from './directives/';
-import { FormsModule } from '@angular/forms';
-import { BrowserComponent } from './components/browser/browser.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
-import { NoteEditorComponent } from './components/note-editor/note-editor.component';
-import { MathInputComponent } from './components/math-input/math-input.component';
 
 @NgModule({
   declarations: [
@@ -21,11 +18,14 @@ import { MathInputComponent } from './components/math-input/math-input.component
     BrowserComponent,
     NoteEditorComponent,
     MathInputComponent,
+    CustomizeFolderComponent,
+    CustomizeNoteComponent,
   ],
   imports: [
     CommonModule,
     TranslateModule,
     FormsModule,
+    ReactiveFormsModule,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
     NzTabsModule,
@@ -34,6 +34,7 @@ import { MathInputComponent } from './components/math-input/math-input.component
     TranslateModule,
     WebviewDirective,
     FormsModule,
+    ReactiveFormsModule,
     PlatformComponent,
     BrowserComponent,
     NoteEditorComponent,
