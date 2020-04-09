@@ -1,20 +1,14 @@
 {
-  "name": "angular-electron",
-  "version": "6.4.0",
-  "description": "Angular 8 with Electron (Typescript + SASS + Hot Reload)",
-  "homepage": "https://github.com/maximegris/angular-electron",
+  "name": "NoxuNote",
+  "version": "2.0.0-alpha",
+  "description": "",
+  "homepage": "https://noxunote.fr",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Léo ROLLAND",
+    "email": "rolland.leo@orange.fr"
   },
   "keywords": [
-    "angular",
-    "angular 8",
-    "electron",
-    "typescript",
-    "eslint",
-    "spectron",
-    "sass"
+    "notes"
   ],
   "main": "main.js",
   "private": true,

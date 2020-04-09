@@ -190,17 +190,27 @@ export class BrowserComponent implements OnInit, OnDestroy {
  *                                       CONTEXTUAL MENU                                           *
  ***************************************************************************************************/
 
-  newFolder(atRoot: boolean = false) {
+ /**
+  * Crée un dossier avec pour parent le dossier sélectionné
+  * @param atRoot Le dossier crée est il dans un noeud racine
+  */
+  async newFolder(atRoot: boolean = false) {
     console.log("Création d'un dossier : ", this.nzTree.getSelectedNodeList()[0]);
     
     // Si le dossier sélectionné est fermé, on l'ouvre
     this.nzTree.getSelectedNodeList()[0].isExpanded = true
     let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
     this.selectedKey = newFolder.uuid
-    console.log(newFolder);
+    // Sauvegarde des changements
+    await this._ioS.saveListFolders(StorageMode.Local)
   }
 
-  removeFolder() {
+  /**
+   * Supprime le dossier sélectionné
+   */
+  async removeFolder() {
     this._ioS.removeFolder(StorageMode.Local, this._folders.find(f=>f.uuid==this.selectedKey))
+    // Sauvegarde des changements
+    await this._ioS.saveListFolders(StorageMode.Local)
   }
 }

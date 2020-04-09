@@ -18,7 +18,7 @@ export class LocalFolderDriverService implements IFolderDriver {
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
   createFolder(name: string, parentId?: string): Folder {
-    let f: Folder = {
+    let f: Folder = Object.assign(new Folder(), {
       uuid: uuidv4(),
       title: name,
       color: "#FFFFFF",
@@ -26,7 +26,7 @@ export class LocalFolderDriverService implements IFolderDriver {
       noteUUIDs: [],
       parentFolder: parentId,
       data: {}
-    }
+    })
     this.addFolderToCache(f)
     return f
   }
