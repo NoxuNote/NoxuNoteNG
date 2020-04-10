@@ -131,7 +131,6 @@ export class IoService {
         // })
         // Remove sub folders
         folderList.forEach((f, index) => {
-          console.log("vérification de ", f.uuid, folderToRemove.uuid, index, " sur ", [...folderList])
           // Si f dossier enfant
           if (f.parentFolder && f.parentFolder == folderToRemove.uuid) {
             console.log(`${f.uuid} a pour parent ${folderToRemove.uuid}`);

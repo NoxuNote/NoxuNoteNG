@@ -21,7 +21,7 @@
         [attr.draggable]="node.origin.isRoot?null:true"
         [attr.aria-grabbed]="node.origin.isRoot?null:true"
         [class.draggable]="node.origin.isRoot?null:true"
-        [class.active]="selectedKey === node.key"
+        [class.active]="selectedNode?.key === node.key"
         [class.root]="node.origin.isRoot"
         [class.folder]="node.origin.isFolder"
         (contextmenu)="contextMenu($event, node)">

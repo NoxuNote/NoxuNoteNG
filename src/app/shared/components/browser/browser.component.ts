@@ -1,13 +1,13 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService } from '../../../services';
-import { Subscription, Observable, timer } from 'rxjs';
+import { Subscription, Observable, timer, Subject } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
 import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
 import { ThrowStmt } from '@angular/compiler';
-import { debounce } from 'rxjs/operators';
+import { debounce, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
 import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
 
@@ -23,14 +23,14 @@ export class BrowserComponent implements OnInit, OnDestroy {
   @ViewChild('nzTree') nzTree: NzTreeComponent;
   
   /**
-   * Noeuds de l'arbre de navigation
+   * Noeuds de l'arbre de navigation lors de sa création
    */
   nodes: NzTreeNodeOptions[] = [];
 
   /**
    * Noeud actif
    */
-  selectedKey: string
+  selectedNode: NzTreeNode
 
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
     private _modalService: NzModalService) { }
@@ -54,6 +54,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   _folders: Folder[] = []
 
+  /**
+   * Emitted when tree has ended to generate
+   */
+  private treeGeneratedSubject = new Subject<void>();
+
   subscribtions: Subscription[] = []
 
   ngOnInit() {
@@ -73,7 +78,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
       console.debug("selecting " + uuid)
-      this.selectedKey = uuid
+      this.setSelectedNode(uuid)
     }))
   }
 
@@ -108,7 +113,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
       }
     })
     console.log("dossiers", this._folders);
-    
+    console.debug("Fin de la génération de l'arbre")
+    this.treeGeneratedSubject.next()
   }
   
   ngOnDestroy() {
@@ -160,9 +166,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * @param data Tree Node event emitter
    */
   selectNode(data: NzFormatEmitEvent): void {
-    console.log("selection de ", data.node)
-    this.selectedKey = data.node.key
-    console.log(this.nzTree.getSelectedNodeList())
+    this.selectedNode = data.node
   }
 
   /**
@@ -195,7 +199,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Returns the selected folder, undefined otherwise
    */
   getSelectedFolder(): Folder {
-    return this._folders.find(f=>f.uuid==this.selectedKey)
+    return this._folders.find(f=>f.uuid==this.selectedNode.key)
+  }
+
+  setSelectedNode(key: string) {
+    console.debug('selection du noeud', key)
+    this.selectedNode = this.nzTree?.getTreeNodeByKey(key)
   }
 
 
@@ -209,11 +218,15 @@ export class BrowserComponent implements OnInit, OnDestroy {
  */
  async newFolder(atRoot: boolean = false) {    
    // Si le dossier sélectionné est fermé, on l'ouvre
-   this.nzTree.getSelectedNodeList()[0].isExpanded = true
-   let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
-   this.selectedKey = newFolder.uuid
+   this.selectedNode.isExpanded = true
+   let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedNode.key)
    // Sauvegarde des changements
    await this._ioS.saveListFolders(StorageMode.Local)
+   // On attend que la liste des dossiers soit mise à jour pour
+   // sélectionner le nouveau noeud
+   this.treeGeneratedSubject.pipe(take(1)).subscribe(()=>{
+     setImmediate(()=>this.setSelectedNode(newFolder.uuid))
+   })
  }
 
   /**
