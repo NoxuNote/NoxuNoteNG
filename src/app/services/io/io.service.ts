@@ -55,6 +55,27 @@ export class IoService {
     }
   }
 
+  public createNote(source: StorageMode, title?: string): Promise<NoteMetadata> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.createNote(title)
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+
+  public removeNote(source: StorageMode, n: NoteMetadata): Promise<void> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.removeNote(n)
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
+
+
   /*
    *
    * ------------- FOLDERS -------------
@@ -126,9 +147,11 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         // Remove sub notes
-        // noteList.filter(n => folderToRemove.noteUUIDs.includes(n.uuid)).forEach(n => {
-        //   // TODO: delete note
-        // })
+        noteList.forEach(n => {
+          if (folderToRemove.noteUUIDs.includes(n.uuid)) {
+            this.removeNote(source, n)
+          }
+        })
         // Remove sub folders
         folderList.forEach((f, index) => {
           // Si f dossier enfant

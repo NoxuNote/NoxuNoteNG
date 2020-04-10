@@ -5,7 +5,8 @@ import { INoteDriver } from '../INoteDriver';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { PathsService } from './paths/paths.service';
-import { JsonConvert, ValueCheckingMode } from "json2typescript"
+import { JsonConvert, ValueCheckingMode } from "json2typescript";
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -56,6 +57,11 @@ export class LocalNoteDriverService implements INoteDriver {
   
   async saveNote(note: Note): Promise<NoteMetadata> {
     if (!this._elS.isElectron) return
+    // If folder doesn't exist, create it
+    const notePath = this.getNoteFolderPath(note.meta.uuid)
+    if (!this._elS.fs.existsSync(notePath)) {
+      await this._elS.fs.mkdir(notePath)
+    }
     // Promise union between the 'note writing file promise' and the 'meta.json writing file promise'
     await Promise.all([
       this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
@@ -64,14 +70,44 @@ export class LocalNoteDriverService implements INoteDriver {
     return note.meta
   }
 
-  saveNewNote(content: string, title?: string): Promise<NoteMetadata> {
-    throw new Error("Method not implemented.");
+  async createNote(title?: string): Promise<NoteMetadata> {
+    if (!this._elS.isElectron) return
+    // Note creation
+    let meta = Object.assign(new NoteMetadata(), {
+      uuid: uuidv4(),
+      title: title? title : "Nouvelle Note",
+      description: "",
+      author: this._elS.os.userInfo().username,
+      lastedit: new Date(),
+      version: 1,
+      data: {}
+    })
+    let note: Note = {
+      meta: meta,
+      content: {}
+    }
+    // Writing note on disk
+    await this.saveNote(note)
+    // Adding meta to cache
+    this._listNotesSubject.next(this._listNotesSubject.getValue().concat(meta))
+    return meta
   }
 
   editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
     throw new Error("Method not implemented.");
   }
 
+  async removeNote(n: NoteMetadata): Promise<void> {
+    // Removing folder from disk
+    const notePath = this.getNoteFolderPath(n.uuid)
+    await this._elS.fs.emptyDir(notePath)
+    await this._elS.fs.rmdir(notePath)
+    // Mise à jour du cache
+    let currentCache: NoteMetadata[] = this._listNotesSubject.getValue()
+    currentCache.splice(currentCache.indexOf(n), 1)
+    this._listNotesSubject.next(currentCache)
+    return
+  }
   
   /**
    * Returns the NoteMetadata readed from file
@@ -106,10 +142,17 @@ export class LocalNoteDriverService implements INoteDriver {
   }
 
   /**
+   * Returns the path of note folder
+   */
+  private getNoteFolderPath(uuid: string): string {
+    return this._elS.path.join(this._paS.getNotesFolder(), uuid)
+  }
+
+  /**
    * Returns the complete path of the stored note
    * @param uuid Note UUID
    */
-  private getNotePath(uuid: string) {
+  private getNotePath(uuid: string): string {
     return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'note.json')
   }
 
@@ -117,7 +160,7 @@ export class LocalNoteDriverService implements INoteDriver {
    * Returns the complete path of the stored note meta file
    * @param uuid Note UUID
    */
-  private getMetaPath(uuid: string) {
+  private getMetaPath(uuid: string): string {
     return this._elS.path.join(this._paS.getNotesFolder(), uuid, 'meta.json')
   }
   
