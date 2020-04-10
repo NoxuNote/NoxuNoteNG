@@ -12,7 +12,7 @@
     [nzData]="nodes" 
     [nzSearchValue]="searchValue"
     nzDraggable
-    (nzClick)="activeNode($event)"
+    (nzClick)="activateNode($event)"
     (nzContextMenu)="selectNode($event)"
     [nzTreeTemplate]="nzTreeTemplate">
   </nz-tree>

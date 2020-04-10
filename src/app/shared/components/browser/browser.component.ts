@@ -147,7 +147,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Triggered when user left-clicks on a tree node
    * @param data Tree Node event emitter
    */
-  activeNode(data: NzFormatEmitEvent): void {
+  activateNode(data: NzFormatEmitEvent): void {
     // Close contextual menu
     this._nzContextMenuService.close()
     // Select element
