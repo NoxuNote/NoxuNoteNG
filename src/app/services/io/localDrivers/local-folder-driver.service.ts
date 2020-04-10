@@ -45,16 +45,13 @@ export class LocalFolderDriverService implements IFolderDriver {
   }
 
   removeFolder(f: Folder) {
+    console.debug("suppression du dossier", f)
     if (!f) return
-    // Suppression des enfants
-    this._listFoldersSubject.getValue().forEach(folder => {
-      if (folder.parentFolder == f.uuid) {
-        this.removeFolder(folder)
-      }
-    })
     // Récupération du cache
     let currentCache: Folder[] = this._listFoldersSubject.getValue()
     // Suppression du dossier
+    // ATTENTION, cette opération supprime également l'élément
+    // chez les tableaux des subscripters ! (currentCache -> même instance)
     currentCache.splice(currentCache.indexOf(f), 1)
     // Mise à jour du cache
     this._listFoldersSubject.next(currentCache)

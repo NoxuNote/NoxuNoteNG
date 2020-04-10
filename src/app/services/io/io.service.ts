@@ -115,4 +115,34 @@ export class IoService {
     }
   }
 
+  /**
+   * Supprime récursivement un dossier et les notes qu'il contient
+   * @param source Source de donnée
+   * @param folderToRemove Dossier à supprimer
+   * @param noteList Liste CONSTANTE des arrays (copie de la vraie liste qui sera modifiée)
+   * @param folderList Liste CONSTANTE des folderList (même chose)
+   */
+  removeFolderRecursive(source: StorageMode, folderToRemove: Folder, noteList: NoteMetadata[], folderList: Folder[]) {
+    switch (source) {
+      case StorageMode.Local:
+        // Remove sub notes
+        // noteList.filter(n => folderToRemove.noteUUIDs.includes(n.uuid)).forEach(n => {
+        //   // TODO: delete note
+        // })
+        // Remove sub folders
+        folderList.forEach((f, index) => {
+          console.log("vérification de ", f.uuid, folderToRemove.uuid, index, " sur ", [...folderList])
+          // Si f dossier enfant
+          if (f.parentFolder && f.parentFolder == folderToRemove.uuid) {
+            console.log(`${f.uuid} a pour parent ${folderToRemove.uuid}`);
+            // folderList.splice(index, 1)
+            this.removeFolderRecursive(source, f, noteList, folderList)
+          }
+        })
+        this._localFolderDriverService.removeFolder(folderToRemove)
+      case StorageMode.Cloud:
+        return
+    }
+  }
+
 }

@@ -64,7 +64,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }))
     this.updateNoteList()
     // Automatically fetch folder list
-    this.subscribtions.push(this._ioS.getListFolders(this._source).subscribe(folders => {
+    this.subscribtions.push(this._ioS.getListFolders(this._source).pipe(debounce(() => timer(20))).subscribe(folders => {
+      console.debug("Dossiers mis à jour dans le browser");
       this._folders = folders
       this.generateTree()
     }))
@@ -159,7 +160,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * @param data Tree Node event emitter
    */
   selectNode(data: NzFormatEmitEvent): void {
+    console.log("selection de ", data.node)
     this.selectedKey = data.node.key
+    console.log(this.nzTree.getSelectedNodeList())
   }
 
   /**
@@ -195,35 +198,46 @@ export class BrowserComponent implements OnInit, OnDestroy {
     return this._folders.find(f=>f.uuid==this.selectedKey)
   }
 
-/***************************************************************************************************
- *                                       CONTEXTUAL MENU                                           *
- ***************************************************************************************************/
-
- /**
-  * Crée un dossier avec pour parent le dossier sélectionné
-  * @param atRoot Le dossier crée est il dans un noeud racine
-  */
-  async newFolder(atRoot: boolean = false) {    
-    // Si le dossier sélectionné est fermé, on l'ouvre
-    this.nzTree.getSelectedNodeList()[0].isExpanded = true
-    let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
-    this.selectedKey = newFolder.uuid
-    // Sauvegarde des changements
-    await this._ioS.saveListFolders(StorageMode.Local)
-  }
-
-  /**
-   * Supprime le dossier sélectionné
-   */
-  async removeFolder() {
-    this._ioS.removeFolder(StorageMode.Local, this.getSelectedFolder())
-    // Sauvegarde des changements
-    await this._ioS.saveListFolders(StorageMode.Local)
-  }
 
 /***************************************************************************************************
  *                                       FOLDER MODIFICATION                                       *
  ***************************************************************************************************/
+
+/**
+ * Crée un dossier avec pour parent le dossier sélectionné
+ * @param atRoot Le dossier crée est il dans un noeud racine
+ */
+ async newFolder(atRoot: boolean = false) {    
+   // Si le dossier sélectionné est fermé, on l'ouvre
+   this.nzTree.getSelectedNodeList()[0].isExpanded = true
+   let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedKey)
+   this.selectedKey = newFolder.uuid
+   // Sauvegarde des changements
+   await this._ioS.saveListFolders(StorageMode.Local)
+ }
+
+  /**
+   * Supprime le dossier sélectionné
+   */
+  removeFolder() {
+    const f: Folder = this.getSelectedFolder()
+    this._modalService.confirm({
+      nzTitle: `Êtes-vous sur de vouloir supprimer <b>${f.title}</b> ?`,
+      nzContent: 'Tout ce que ce dossier contient sera supprimé de façon permanente.',
+      nzOkText: 'Oui',
+      nzOkType: 'danger',
+      nzOnOk: () => {
+        // Removing folder     
+        // ATTENTION : On doit passer en paramètre une copie de this._notes et this._folders
+        // car durant la suppression récursive, des éléments vont être supprimés de ces arrays
+        // et removeFolderRecursive prend en paramètre des tableaux constants.
+        this._ioS.removeFolderRecursive(StorageMode.Local, f, [...this._notes], [...this._folders])
+        // Saving changes
+        this._ioS.saveListFolders(StorageMode.Local)
+      },
+      nzCancelText: 'Annuler'
+    })
+  }
 
   /**
    * Ouvre le menu de modification pour le dossier sélectionné
