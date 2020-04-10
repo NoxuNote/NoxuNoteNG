@@ -1,0 +1,46 @@
+:host ::ng-deep .ant-tree {
+  overflow: hidden;
+  margin: 0 -24px;
+  padding: 0 24px;
+}
+
+:host ::ng-deep .ant-tree li {
+  padding: 4px 0 0 0;
+  user-select: none;
+}
+
+.custom-node {
+  cursor: pointer;
+  line-height: 24px;
+  margin-left: 4px;
+  display: inline-block;
+  margin: 0 -1000px;
+  padding: 0 1000px;
+}
+
+.root {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.folder {
+  // font-weight: 700;
+  font-size: 1.1em;
+}
+
+.active {
+  background: #3570f5;
+  color: #fff;
+}
+
+.file-name,
+.folder-name {
+  margin-left: 4px;
+}
+span.font-highlight {
+  color: red;
+}
+
+.delete {
+  color: darkred;
+}

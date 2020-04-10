@@ -12,11 +12,15 @@ export class PathsService {
 
   }
 
-  getNotesFolder(): string {
+  public getFoldersJSONPath(): string {
+    return this._elS.path.join(this.getNoxuNoteDir(), 'folders.json')
+  }
+
+  public getNotesFolder(): string {
     return this._elS.path.join(this.getNoxuNoteDir(), 'notes')
   }
 
-  private getNoxuNoteDir(): string {
+  public getNoxuNoteDir(): string {
     return this._elS.path.join(this._elS.os.homedir(), 'NoxuNoteNG')
   }
 

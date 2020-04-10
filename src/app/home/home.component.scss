@@ -1,13 +1,13 @@
 .container {
   .left {
     position: fixed;
-    width: 250px;
+    width: 300px;
     height: 100vh;
     padding: 20px;
     background-color: var(--left-menu-background);
   } 
   .right {
-    margin-left: 250px;
+    margin-left: 300px;
     height: 100vh;
     padding: 0;
   }

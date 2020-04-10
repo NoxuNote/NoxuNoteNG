@@ -1,0 +1,50 @@
+[
+  {
+    "uuid": "5641dqs681az16d1s3q5",
+    "title": "Mon dossier 1",
+    "color": "#FFFFFF",
+    "description": "Description de ce dossier",
+    "noteUUIDs": [],
+    "parentFolder": null,
+    "data": {}
+  },
+  {
+    "uuid": "fhdg584hgfd515gh61fd",
+    "title": "Mon dossier 2",
+    "color": "#FFFFFF",
+    "description": "Description de ce dossier",
+    "noteUUIDs": [],
+    "parentFolder": null,
+    "data": {}
+  },
+  {
+    "uuid": "kjh4516kj5164hggfd4156",
+    "title": "Mon sous dossier 1",
+    "color": "#FFFFFF",
+    "description": "Description de ce dossier",
+    "noteUUIDs": [],
+    "parentFolder": "5641dqs681az16d1s3q5",
+    "data": {}
+  },
+  {
+    "uuid": "fjkdlsfdsfdsfsd156f65ds1",
+    "title": "Mon sous dossier 2",
+    "color": "#FFFFFF",
+    "description": "Description de ce dossier",
+    "noteUUIDs": [
+      "5660f1a0-fab8-4e02-b9a8-114c83e92f05",
+      "c73f574b-8920-427f-9342-e1a022230f96"
+    ],
+    "parentFolder": "5641dqs681az16d1s3q5",
+    "data": {}
+  },
+  {
+    "uuid": "jhg15hgfj51g56fd1fds15",
+    "title": "Mon soussous dossier 2",
+    "color": "#FFFFFF",
+    "description": "Description de ce dossier",
+    "noteUUIDs": [],
+    "parentFolder": "kjh4516kj5164hggfd4156",
+    "data": {}
+  }
+]

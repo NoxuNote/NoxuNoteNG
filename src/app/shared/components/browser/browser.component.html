@@ -1,11 +1,87 @@
 <div>
-
-  <h2>Browser</h2>
-
-  Stockage : <b>{{_source==0 ? 'Disque dur' : 'Cloud'}}</b>&nbsp;
-  <button nz-button nzType="secondary" (click)="updateNoteList()"><i nz-icon nzType="reload" nzTheme="outline"></i></button>
-  <ul>
+  Mode : <b>{{_source==0 ? 'Desktop' : 'Web'}}</b>&nbsp;
+  <nz-input-group [nzSuffix]="suffixIcon">
+    <input type="text" nz-input placeholder="Search" [(ngModel)]="searchValue" />
+  </nz-input-group>
+  <ng-template #suffixIcon>
+    <i nz-icon nzType="search"></i>
+  </ng-template>
+  <nz-tree 
+    #nzTree 
+    nzNoAnimation
+    [nzData]="nodes" 
+    [nzSearchValue]="searchValue"
+    nzDraggable
+    (nzClick)="activateNode($event)"
+    (nzContextMenu)="selectNode($event)"
+    [nzTreeTemplate]="nzTreeTemplate">
+  </nz-tree>
+  <ng-template #nzTreeTemplate let-node>
+    <span class="custom-node" 
+        [attr.draggable]="node.origin.isRoot?null:true"
+        [attr.aria-grabbed]="node.origin.isRoot?null:true"
+        [class.draggable]="node.origin.isRoot?null:true"
+        [class.active]="selectedNode?.key === node.key"
+        [class.root]="node.origin.isRoot"
+        [class.folder]="node.origin.isFolder"
+        (contextmenu)="contextMenu($event, node)">
+      <span *ngIf="node.origin.isRoot; else notRoot">
+        <i nz-icon [nzType]="node.origin.key=='local_root' ? 'desktop' : 'global'"></i>
+        <span class="folder-name">{{ node.title }}</span>
+      </span>
+      <ng-template #notRoot>
+        <span *ngIf="node.origin.isFolder">
+          <i nz-icon nzTheme="fill" [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
+          <span class="folder-name">{{ node.title }}</span>
+        </span>
+        <span *ngIf="!node.origin.isFolder">
+          <i nz-icon nzType="file"></i>
+          <span class="file-name">{{ node.title }}</span>
+        </span>
+      </ng-template>
+    </span>
+  </ng-template>
+  <!-- Clic droit sur un dossier -->
+  <nz-dropdown-menu #foldermenu="nzDropdownMenu">
+    <ul nz-menu>
+      <li nz-menu-item>
+        <i nz-icon nzType="file-add"></i> Nouvelle note
+      </li>
+      <li nz-menu-item (click)="newFolder()">
+        <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
+      </li>
+      <li nz-menu-item (click)="editFolder()">
+        <i nz-icon nzType="edit"></i> Renommer / Modifier
+      </li>
+      <li nz-menu-item (click)="removeFolder()" class="delete">
+        <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
+      </li>
+    </ul>
+  </nz-dropdown-menu>
+  <!-- Clic droit sur une note -->
+  <nz-dropdown-menu #notemenu="nzDropdownMenu">
+    <ul nz-menu>
+      <li nz-menu-item>
+        <i nz-icon nzType="edit"></i> Renommer
+      </li>
+      <li nz-menu-item class="delete">
+        <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
+      </li>
+    </ul>
+  </nz-dropdown-menu>
+  <!-- Clic droit sur un dossier racine -->
+  <nz-dropdown-menu #rootmenu="nzDropdownMenu">
+    <ul nz-menu>
+      <li nz-menu-item (click)="updateNoteList()">
+        <i nz-icon nzType="reload"></i> Rafraîchir
+      </li>
+      <li nz-menu-item (click)="newFolder(true)">
+        <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
+      </li>
+    </ul>
+  </nz-dropdown-menu>
+  <!-- <ul>
     <li *ngFor="let note of _notes" (click)="noteClick(note)">{{ note.title }}</li>
-  </ul>
+  </ul> -->
 
 </div>

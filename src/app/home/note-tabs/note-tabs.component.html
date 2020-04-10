@@ -6,7 +6,7 @@
   </p-tabView>
 </div> -->
 <div>
-  <nz-tabset [(nzSelectedIndex)]="selectedIndex">
+  <nz-tabset [(nzSelectedIndex)]="selectedIndex" (nzSelectChange)="tabChange($event)">
     <nz-tab *ngFor="let tab of tabs ; let i = index" [attr.data-uuid]="tab.savedNote.meta.uuid" [nzTitle]="titleTemplate">
       <ng-template #titleTemplate>
         <div>
@@ -17,4 +17,15 @@
       <app-note-editor [note]="tab.savedNote"></app-note-editor>
     </nz-tab>
   </nz-tabset>
+  <div *ngIf="tabs.length==0" class="editorPlaceholder">
+    <h2>À vous de jouer !</h2>
+    <br>
+    <img class="bigImage" src="../../../assets/drawings/sorciere.svg">
+    <p>
+      Créez ou sélectionnez une note pour commencer à écrire
+      <br><br>
+      <button nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouvelle note</button>&nbsp;
+      <button nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouveau dossier</button>
+    </p>
+  </div>
 </div>
