@@ -90,9 +90,9 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.editor = new EditorJS({
       holder: this.editorContainer.nativeElement,
-      autofocus: true,
+      autofocus: false,
       data: this.note.content as any,
-      placeholder: "Entrez du texte",
+      placeholder: "Cliquez ici et commencer à vous exprimer !",
       tools: {
         paragraph: Paragraph,
         header: Header
@@ -139,8 +139,6 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   async onChange() {
     if (!this.willClose) {
-      console.log("onChange called");
-      console.trace();
       this.onChangeSubject.next()
       this.changesAreSaved = false
       const newBlockCount = this.editor.blocks.getBlocksCount()
