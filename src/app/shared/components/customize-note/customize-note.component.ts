@@ -44,8 +44,7 @@ export class CustomizeNoteComponent implements OnInit, AfterViewInit {
       let newMeta = Object.assign(new NoteMetadata(), this.inputNote)
       newMeta = Object.assign(newMeta, this.validateForm.getRawValue())
       this.modal.destroy(newMeta);
-    }
-    this.modal.destroy(this.inputNote);
+    } else  this.modal.destroy(this.inputNote);
   }
 
   /**

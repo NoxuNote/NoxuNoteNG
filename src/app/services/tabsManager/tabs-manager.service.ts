@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { IoService } from '../io/io.service';
 import { StorageMode } from '../io/StorageMode';
 import { NoteTab } from './NoteTab';
@@ -8,7 +8,7 @@ import { Note } from '../../types/Note';
 @Injectable({
   providedIn: 'root'
 })
-export class TabsManagerService {
+export class TabsManagerService implements OnInit {
 
   _editedNoteUuid: BehaviorSubject<string> = new BehaviorSubject<string>("")
   /**
@@ -28,7 +28,27 @@ export class TabsManagerService {
    */
   readonly alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
 
-  constructor(private _ioS: IoService) { }
+  constructor(private _ioS: IoService) {
+    // When metadatas changes
+    this._ioS.getListNotes(StorageMode.Local).subscribe(notes => {
+      console.debug('Mise à jour des métadonnées des onglets')
+      // Update tabs data
+      let tabs: NoteTab[] = this._openedNotes.getValue()
+      notes.forEach(note => {
+        tabs.forEach((tab, index) => {
+          if (tab.savedNote.meta.uuid == note.uuid) {
+            tabs[index].savedNote.meta = note
+          }
+        })
+      })
+      // Push new tabs values
+      this._openedNotes.next(tabs)
+    })
+  }
+  
+  ngOnInit(): void {
+    
+  }
 
   /**
    * Opens a new tab
@@ -49,7 +69,7 @@ export class TabsManagerService {
    * @param uuid Note uuid
    */
   public close(uuid: string) {
-    if (!this._openedNotes.getValue().map(n=>n.savedNote.meta.uuid).includes(uuid)) return
+    if (!this._openedNotes.getValue().find(n=>n.savedNote.meta.uuid==uuid)) return
     this.shift(uuid)
   }
 

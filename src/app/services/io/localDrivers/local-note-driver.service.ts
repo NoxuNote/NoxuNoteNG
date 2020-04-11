@@ -120,6 +120,7 @@ export class LocalNoteDriverService implements INoteDriver {
       cache = cache.concat(newMetadata)
     }
     // Update cache
+    console.debug('emitting nex listNotes value')
     this._listNotesSubject.next(cache)
     // Write JSON
     console.debug('wrote metadata note to FS')
