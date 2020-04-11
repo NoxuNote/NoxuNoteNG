@@ -17,7 +17,7 @@ export class LocalFolderDriverService implements IFolderDriver {
 
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
-  createFolder(name: string, parentId?: string): Folder {
+  async createFolder(name: string, parentId?: string): Promise<Folder> {
     let f: Folder = Object.assign(new Folder(), {
       uuid: uuidv4(),
       title: name,
@@ -27,7 +27,7 @@ export class LocalFolderDriverService implements IFolderDriver {
       parentFolder: parentId? parentId : null,
       data: {}
     })
-    this.addFolderToCache(f)
+    await this.addFolderToCache(f)
     return f
   }
   
@@ -112,8 +112,9 @@ export class LocalFolderDriverService implements IFolderDriver {
    * Ajoute un dossier dans le cache
    * @param f Dossier
    */
-  private addFolderToCache(f: Folder) {
+  private async addFolderToCache(f: Folder): Promise<void> {
     this._listFoldersSubject.next(this._listFoldersSubject.getValue().concat(f))
+    return 
   }
 
 }

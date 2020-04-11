@@ -34,12 +34,18 @@ export interface INoteDriver {
    * Enregistre une nouvelle note
    * @param note Note à enregistrer
    */
-  saveNewNote(content: string, title?: string): Promise<NoteMetadata>
+  createNote(title?: string): Promise<NoteMetadata>
 
   /**
    * Modifie les métadonnées d'une note
    * @param newMetadata Nouvelles métadonnées
    */
-  editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
+  saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
+
+  /**
+   * Supprime définitivement unenote
+   * @param n Note à supprimer
+   */
+  removeNote(n: NoteMetadata): Promise<void>
 
 }

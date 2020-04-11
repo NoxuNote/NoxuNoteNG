@@ -80,6 +80,11 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   blocksCount: number = 0;
 
+  /**
+   * Set to true when the editor will be destroyed
+   */
+  willClose: boolean = false
+
   constructor(private _ioS: IoService, private _mjS: MathjaxService, private _nzContextMenuService: NzContextMenuService) { }
 
   ngAfterViewInit() {
@@ -109,25 +114,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
           this._nzContextMenuService.close()
         })
       },
-      onChange: async () => {
-        this.onChangeSubject.next()
-        this.changesAreSaved = false
-        const newBlockCount = this.editor.blocks.getBlocksCount()
-        /**
-         * When a block is added or merged with the block above
-         * the typeset disappears, so we need to check the current edited block every time.
-         */
-        if (newBlockCount != this.blocksCount) {
-          const currentBlock = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
-          if (this._mjS.testUnwrappedFormula(currentBlock.innerHTML)) {
-            const restore = saveCaretPosition(currentBlock)
-            await this.typesetBlock(currentBlock)
-            restore()
-          }
-          this.bindOnFormulaClick(currentBlock)
-          this.blocksCount = newBlockCount
-        }
-      }
+      onChange: () => this.onChange()
     });
     // Once user hasn't changed the note for 3 seconds, save 
     this.subscriptions.push(
@@ -136,9 +123,42 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    // // Wait for changes treatment/save before closing editor
+    // this.onChange().then(()=> {
+      
+    // })
+    this.willClose = true
     this.subscriptions.map(s => s.unsubscribe())
     if (!this.changesAreSaved) this.save().then(() => this.editor.destroy())
     else this.editor.destroy()
+  }
+
+
+  /**
+   * Triggered when editor notices changes
+   */
+  async onChange() {
+    if (!this.willClose) {
+      console.log("onChange called");
+      console.trace();
+      this.onChangeSubject.next()
+      this.changesAreSaved = false
+      const newBlockCount = this.editor.blocks.getBlocksCount()
+      /**
+       * When a block is added or merged with the block above
+       * the typeset disappears, so we need to check the current edited block every time.
+       */
+      if (newBlockCount != this.blocksCount) {
+        const currentBlock = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+        if (this._mjS.testUnwrappedFormula(currentBlock.innerHTML)) {
+          const restore = saveCaretPosition(currentBlock)
+          await this.typesetBlock(currentBlock)
+          restore()
+        }
+        this.bindOnFormulaClick(currentBlock)
+        this.blocksCount = newBlockCount
+      }
+    }
   }
 
   /**

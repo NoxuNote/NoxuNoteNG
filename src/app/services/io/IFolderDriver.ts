@@ -26,7 +26,7 @@ export interface IFolderDriver {
    * @param name Nom du dossier
    * @param parentId ID du parent
    */
-  createFolder(name: string, parentId?: string): Folder
+  createFolder(name: string, parentId?: string): Promise<Folder>
 
   /**
    * Met à jour les données d'un dossier en cache

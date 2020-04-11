@@ -1,5 +1,5 @@
 <div>
-  <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
+  <form nz-form [formGroup]="validateForm" (keydown.enter)="trySubmitForm()">
   
     <nz-form-item>
       <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="title">Titre</nz-form-label>

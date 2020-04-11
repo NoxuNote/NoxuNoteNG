@@ -44,7 +44,7 @@
   <!-- Clic droit sur un dossier -->
   <nz-dropdown-menu #foldermenu="nzDropdownMenu">
     <ul nz-menu>
-      <li nz-menu-item>
+      <li nz-menu-item (click)="createNote()">
         <i nz-icon nzType="file-add"></i> Nouvelle note
       </li>
       <li nz-menu-item (click)="newFolder()">
@@ -61,10 +61,10 @@
   <!-- Clic droit sur une note -->
   <nz-dropdown-menu #notemenu="nzDropdownMenu">
     <ul nz-menu>
-      <li nz-menu-item>
-        <i nz-icon nzType="edit"></i> Renommer
+      <li nz-menu-item (click)="editNote()">
+        <i nz-icon nzType="edit"></i> Renommer / Modifier
       </li>
-      <li nz-menu-item class="delete">
+      <li nz-menu-item class="delete" (click)="removeNote()">
         <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
       </li>
     </ul>

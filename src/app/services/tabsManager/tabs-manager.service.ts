@@ -1,25 +1,59 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { IoService } from '../io/io.service';
 import { StorageMode } from '../io/StorageMode';
 import { NoteTab } from './NoteTab';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Note } from '../../types/Note';
+import { debounce, debounceTime } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
-export class TabsManagerService {
+export class TabsManagerService implements OnInit {
 
   _editedNoteUuid: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  /**
+   * Currently edited note
+   */
   readonly editedNoteObservable: Observable<string> = this._editedNoteUuid.asObservable()
 
   _openedNotes: BehaviorSubject<NoteTab[]> = new BehaviorSubject<NoteTab[]>([])
+  /**
+   * Notes opened in tabs
+   */
   readonly openedNotesObservable: Observable<NoteTab[]> = this._openedNotes.asObservable()
 
   _alreadyOpened: Subject<NoteTab> = new Subject<NoteTab>()
-  public alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
+  /**
+   * Emits a note when a client asks to open a note that is already opened
+   */
+  readonly alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
 
-  constructor(private _ioS: IoService) { }
+  constructor(private _ioS: IoService) {
+    // When metadatas changes
+    this._ioS.getListNotes(StorageMode.Local).pipe(debounceTime(100)).subscribe(notes => {
+      console.debug('Mise à jour des métadonnées des onglets', notes)
+      let tabs: NoteTab[] = this._openedNotes.getValue()
+      // Removing unused tabs
+      let uuids = notes.map(n=>n.uuid)
+      tabs = tabs.filter(t=>uuids.includes(t.savedNote.meta.uuid))
+      // Update tabs data
+      tabs.forEach((tab, index) => {
+        console.debug('tabs : ', [...tabs])
+        console.log('updating tab', index);
+        // Find corresponding note meta
+        let noteMeta = notes.find(n=>n.uuid==tab.savedNote.meta.uuid)
+        // Update
+        tabs[index].savedNote.meta = noteMeta
+      })
+      // Push new tabs values
+      this._openedNotes.next(tabs)
+    })
+  }
+  
+  ngOnInit(): void {
+    
+  }
 
   /**
    * Opens a new tab
@@ -40,7 +74,7 @@ export class TabsManagerService {
    * @param uuid Note uuid
    */
   public close(uuid: string) {
-    if (!this._openedNotes.getValue().map(n=>n.savedNote.meta.uuid).includes(uuid)) return
+    if (!this._openedNotes.getValue().find(n=>n.savedNote.meta.uuid==uuid)) return
     this.shift(uuid)
   }
 

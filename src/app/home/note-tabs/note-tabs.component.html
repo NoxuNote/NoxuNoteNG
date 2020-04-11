@@ -24,8 +24,8 @@
     <p>
       Créez ou sélectionnez une note pour commencer à écrire
       <br><br>
-      <button nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouvelle note</button>&nbsp;
-      <button nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouveau dossier</button>
+      <button (click)="askCreateNote()" nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouvelle note</button>&nbsp;
+      <button (click)="askCreateFolder()" nz-button nzType="primary"><i nz-icon nzType="plus" nzTheme="outline"></i> Nouveau dossier</button>
     </p>
   </div>
 </div>
