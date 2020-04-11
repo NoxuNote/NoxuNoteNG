@@ -6,10 +6,10 @@ import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
 import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
-import { ThrowStmt } from '@angular/compiler';
 import { debounce, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
 import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
+import { CustomizeNoteComponent } from '../customize-note/customize-note.component';
 
 @Component({
   selector: 'app-browser',
@@ -226,6 +226,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     })
   }
 
+  editFolder()
+
 /***************************************************************************************************
  *                                         NODE SELECTION                                          *
  ***************************************************************************************************/
@@ -262,6 +264,31 @@ export class BrowserComponent implements OnInit, OnDestroy {
       // Si il s'agit d'une note ou l'ouvre
       this.openNote(data.node.key)
     }
+  }
+
+  editNote() {
+    let n: NoteMetadata = this.getSelectedNote()
+    const modal = this._modalService.create({
+      nzTitle: `Modifier <b>${n.title}</b>`,
+      nzContent: CustomizeNoteComponent,
+      nzComponentParams: {
+        inputNote: n
+      },
+      nzFooter: [
+        {
+          label: 'Valider',
+          onClick: componentInstance => componentInstance.trySubmitForm()
+        }
+      ]
+    })
+    modal.afterClose.subscribe( (result: Folder) => {
+      if (result) {
+        // Updating folder data
+        this._ioS.updateFolder(StorageMode.Local, result)
+        // Saving changes
+        this._ioS.saveListFolders(StorageMode.Local)
+      }
+    })
   }
 
 

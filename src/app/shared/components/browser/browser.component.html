@@ -61,8 +61,8 @@
   <!-- Clic droit sur une note -->
   <nz-dropdown-menu #notemenu="nzDropdownMenu">
     <ul nz-menu>
-      <li nz-menu-item>
-        <i nz-icon nzType="edit"></i> Renommer
+      <li nz-menu-item (click)="editNote()">
+        <i nz-icon nzType="edit"></i> Renommer / Modifier
       </li>
       <li nz-menu-item class="delete" (click)="removeNote()">
         <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
