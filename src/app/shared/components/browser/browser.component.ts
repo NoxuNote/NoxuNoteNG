@@ -1,10 +1,10 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService, BrowserService } from '../../../services';
-import { Subscription, Observable, timer, Subject, merge } from 'rxjs';
+import { Subscription, Observable, timer, Subject, merge, of } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
-import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService } from 'ng-zorro-antd';
+import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService, NzFormatBeforeDropEvent } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
 import { debounceTime, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
@@ -69,12 +69,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.updateNoteList()
     // Automatically fetch folder list
     this.subscribtions.push(this._ioS.getListFolders(this._source).subscribe(folders => {
+      console.debug('nouveaux dossiers : ', folders)
       this._folders = folders
     }))
     // Folder and note merge
     this.subscribtions.push(
       merge(this._ioS.getListFolders(this._source), this._ioS.getListNotes(this._source))
-        .pipe(debounceTime(20))
+        .pipe(debounceTime(100))
         .subscribe(()=> {
           this.generateTree()
         })
@@ -112,7 +113,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Pour chaque élément sans racine
     let folders: Folder[] = [...this._folders] // copie des dossiers
     folders.forEach((f,index)=>{
-      if (f.parentFolder == undefined) {
+      if (!f.parentFolder || f.parentFolder == "") {
         // Création et insertion du noeud
         let noRootNode = TreeTools.createFolderNode(f)
         // Si le noeud était ouvert, on le réouvre
@@ -376,6 +377,57 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this._ioS.saveListFolders(StorageMode.Local)
       }
     })
+  }
+
+
+/***************************************************************************************************
+ *                                           DRAG N DROP                                           *
+ ***************************************************************************************************/
+
+  nzEvent(event: NzFormatEmitEvent): void {
+    if (event.eventName == "drop") {
+      console.debug(event)
+      if (event.dragNode.origin.isFolder) {
+
+        let f: Folder = this._folders.find(f=>f.uuid == event.dragNode.key)
+        let newParent: Folder = this._folders.find(f=>f.uuid == event.node.key)
+        // Set new parent if it exists, else set parent to root
+        f.parentFolder = newParent ? newParent.uuid : ''
+        // Save changes
+        this._ioS.updateFolder(StorageMode.Local, f)
+        this._ioS.saveListFolders(StorageMode.Local)
+
+      } else {
+        console.debug(event.dragNode.parentNode)
+        // Remove note from parentFolder
+        let parentFolderSource: Folder = this._folders.find(f=>f.noteUUIDs.includes(event.dragNode.key))
+        let destinationFolder: Folder = this._folders.find(f=>f.uuid == event.dragNode.parentNode.key)
+        console.debug(parentFolderSource, destinationFolder)
+        if (destinationFolder) {
+          // Remove note UUID from original parent
+          console.debug("original parent", parentFolderSource)
+          parentFolderSource.noteUUIDs = parentFolderSource.noteUUIDs.filter(uuid=>uuid!=event.dragNode.key)
+          // Add note UUID to new parent
+          destinationFolder.noteUUIDs.push(event.dragNode.key)
+          console.debug("new original parent", parentFolderSource)
+          // Save changes
+          this._ioS.updateFolder(StorageMode.Local, parentFolderSource)
+          this._ioS.updateFolder(StorageMode.Local, destinationFolder)
+          this._ioS.saveListFolders(StorageMode.Local)
+        } 
+
+      }
+      // DragnDrop is bugged in NzTree when inserting between two notes, need to refresh
+      this._ioS.refreshListFolders(StorageMode.Local)
+    }
+  }
+
+  /**
+   * Fonction passée en paramètre du NzTree qui permet de définit si un drag n drop est autorisé
+   * ou non
+   */
+  beforeDrop(event: NzFormatBeforeDropEvent): Observable<boolean> {
+    return of(true)
   }
 
 }
