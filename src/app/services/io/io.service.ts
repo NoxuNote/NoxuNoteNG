@@ -117,7 +117,7 @@ export class IoService {
     }
   }
 
-  createFolder(source: StorageMode, name: string, parentId?: string): Folder {
+  createFolder(source: StorageMode, name: string, parentId?: string): Promise<Folder> {
     switch (source) {
       case StorageMode.Local:
         return this._localFolderDriverService.createFolder(name, parentId)

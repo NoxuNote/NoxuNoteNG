@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
-import { IoService } from '../../../services';
+import { IoService, BrowserService } from '../../../services';
 import { Subscription, Observable, timer, Subject, merge } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
@@ -33,7 +33,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   selectedNode: NzTreeNode
 
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
-    private _modalService: NzModalService) { }
+    private _modalService: NzModalService, private _browserService: BrowserService) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
@@ -84,6 +84,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
       console.debug("selecting " + uuid)
       this.setSelectedNode(uuid)
+    }))
+    // Handle browser service/api requests
+    this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe(()=>{
+      this.newFolder(true)
+    }))
+    this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe(()=>{
+      this.createNote()
     }))
   }
 
@@ -194,19 +201,26 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
   async createNote() {
-    // Si le dossier sélectionné est fermé, on l'ouvre
-    this.selectedNode.isExpanded = true
+    let f = this.getSelectedFolder()
+    if (!f) {
+      // Si pas de dossier sélectionné, on en crée un
+      f = await this.newFolder(true)
+    } else {
+      // Si le dossier sélectionné est fermé, on l'ouvre
+      this.selectedNode.isExpanded = true
+    }
     let newNote: NoteMetadata = await this._ioS.createNote(StorageMode.Local)
     console.log("new", newNote);
-    // Set note parent folder
-    let f = this.getSelectedFolder()
     f.noteUUIDs.push(newNote.uuid)
     this._ioS.updateFolder(StorageMode.Local, f)
     this._ioS.saveListFolders(StorageMode.Local)
     // On attend que la liste des notes soit mise à jour pour
     // sélectionner le nouveau noeud
     this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
-      setImmediate(() => this.setSelectedNode(newNote.uuid))
+      setImmediate(() => {
+        this.setSelectedNode(newNote.uuid)
+        this._tmS.open(newNote.uuid)
+      })
     })
   }
 
@@ -257,7 +271,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Returns the selected folder, undefined otherwise
    */
   getSelectedFolder(): Folder {
-    return this._folders.find(f=>f.uuid==this.selectedNode.key)
+    return this.selectedNode && this._folders.find(f=>f.uuid==this.selectedNode.key)
   }
 
   /**
@@ -292,22 +306,26 @@ export class BrowserComponent implements OnInit, OnDestroy {
  *                                       FOLDER MODIFICATION                                       *
  ***************************************************************************************************/
 
-/**
- * Crée un dossier avec pour parent le dossier sélectionné
- * @param atRoot Le dossier crée est il dans un noeud racine
- */
- async newFolder(atRoot: boolean = false) {    
-   // Si le dossier sélectionné est fermé, on l'ouvre
-   this.selectedNode.isExpanded = true
-   let newFolder = this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedNode.key)
-   // Sauvegarde des changements
-   await this._ioS.saveListFolders(StorageMode.Local)
-   // On attend que la liste des dossiers soit mise à jour pour
-   // sélectionner le nouveau noeud
-   this.treeGeneratedSubject.pipe(take(1)).subscribe(()=>{
-     setImmediate(()=>this.setSelectedNode(newFolder.uuid))
-   })
- }
+  /**
+   * Crée un dossier avec pour parent le dossier sélectionné
+   * @param atRoot Le dossier crée est il dans un noeud racine
+   */
+  async newFolder(atRoot: boolean = false): Promise<Folder> {    
+    // Si le dossier sélectionné est fermé, on l'ouvre
+    if (this.selectedNode) this.selectedNode.isExpanded = true
+    let newFolder = await this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedNode.key)
+    // Sauvegarde des changements
+    this._ioS.saveListFolders(StorageMode.Local)
+    // On attend que la liste des dossiers soit mise à jour pour
+    // sélectionner le nouveau noeud
+    this.treeGeneratedSubject.pipe(take(1)).subscribe(()=>{
+      setImmediate(()=>{
+        this.setSelectedNode(newFolder.uuid)
+        this.selectedNode.isExpanded = true
+      })
+    })
+    return newFolder
+  }
 
   /**
    * Supprime le dossier sélectionné

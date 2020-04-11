@@ -3,6 +3,7 @@ import { TabsManagerService } from '../../services/tabsManager/tabs-manager.serv
 import { NoteTab } from '../../services/tabsManager/NoteTab';
 import { Subscription } from 'rxjs';
 import { NzTabComponent } from 'ng-zorro-antd/tabs/public-api';
+import { BrowserService } from '../../services';
 
 @Component({
   selector: 'app-note-tabs',
@@ -12,7 +13,7 @@ import { NzTabComponent } from 'ng-zorro-antd/tabs/public-api';
 export class NoteTabsComponent implements OnInit, OnDestroy {
 
   // private cd: ChangeDetectorRef
-  constructor(private _tmS: TabsManagerService) { }
+  constructor(private _tmS: TabsManagerService, private _browserService: BrowserService) { }
 
   tabs: NoteTab[] = []
 
@@ -47,6 +48,14 @@ export class NoteTabsComponent implements OnInit, OnDestroy {
   }
   tabChange($event) {
     this._tmS.informTabChange(this.tabs[$event.index].savedNote.meta.uuid);
+  }
+
+  askCreateFolder() {
+    this._browserService.askCreateFolder()
+  }
+
+  askCreateNote() {
+    this._browserService.askCreateNote()
   }
 
 }
