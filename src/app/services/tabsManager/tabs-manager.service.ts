@@ -11,13 +11,22 @@ import { Note } from '../../types/Note';
 export class TabsManagerService {
 
   _editedNoteUuid: BehaviorSubject<string> = new BehaviorSubject<string>("")
+  /**
+   * Currently edited note
+   */
   readonly editedNoteObservable: Observable<string> = this._editedNoteUuid.asObservable()
 
   _openedNotes: BehaviorSubject<NoteTab[]> = new BehaviorSubject<NoteTab[]>([])
+  /**
+   * Notes opened in tabs
+   */
   readonly openedNotesObservable: Observable<NoteTab[]> = this._openedNotes.asObservable()
 
   _alreadyOpened: Subject<NoteTab> = new Subject<NoteTab>()
-  public alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
+  /**
+   * Emits a note when a client asks to open a note that is already opened
+   */
+  readonly alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
 
   constructor(private _ioS: IoService) { }
 

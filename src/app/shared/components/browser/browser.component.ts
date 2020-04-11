@@ -218,6 +218,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
       nzOkText: 'Oui',
       nzOkType: 'danger',
       nzOnOk: () => {
+        // tell the tabsManager to force close the note
+        this._tmS.close(note.uuid)
         this._ioS.removeNote(StorageMode.Local, note)
       },
       nzCancelText: 'Annuler'
