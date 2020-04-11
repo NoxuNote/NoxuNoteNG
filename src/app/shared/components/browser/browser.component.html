@@ -14,7 +14,9 @@
     nzDraggable
     (nzClick)="activateNode($event)"
     (nzContextMenu)="selectNode($event)"
-    [nzTreeTemplate]="nzTreeTemplate">
+    [nzTreeTemplate]="nzTreeTemplate"
+    (nzOnDrop)="nzEvent($event)"
+    [nzBeforeDrop]="beforeDrop">
   </nz-tree>
   <ng-template #nzTreeTemplate let-node>
     <span class="custom-node" 

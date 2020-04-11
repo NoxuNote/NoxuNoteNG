@@ -32,15 +32,12 @@ export class TabsManagerService implements OnInit {
   constructor(private _ioS: IoService) {
     // When metadatas changes
     this._ioS.getListNotes(StorageMode.Local).pipe(debounceTime(100)).subscribe(notes => {
-      console.debug('Mise à jour des métadonnées des onglets', notes)
       let tabs: NoteTab[] = this._openedNotes.getValue()
       // Removing unused tabs
       let uuids = notes.map(n=>n.uuid)
       tabs = tabs.filter(t=>uuids.includes(t.savedNote.meta.uuid))
       // Update tabs data
       tabs.forEach((tab, index) => {
-        console.debug('tabs : ', [...tabs])
-        console.log('updating tab', index);
         // Find corresponding note meta
         let noteMeta = notes.find(n=>n.uuid==tab.savedNote.meta.uuid)
         // Update
