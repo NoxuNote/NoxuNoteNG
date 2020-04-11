@@ -226,7 +226,30 @@ export class BrowserComponent implements OnInit, OnDestroy {
     })
   }
 
-  editFolder()
+
+  editNote() {
+    let n: NoteMetadata = this.getSelectedNote()
+    const modal = this._modalService.create({
+      nzTitle: `Modifier <b>${n.title}</b>`,
+      nzContent: CustomizeNoteComponent,
+      nzComponentParams: {
+        inputNote: n
+      },
+      nzFooter: [
+        {
+          label: 'Valider',
+          onClick: componentInstance => componentInstance.trySubmitForm()
+        }
+      ]
+    })
+    modal.afterClose.subscribe( (result: NoteMetadata) => {
+      if (result) {
+        // Updating folder data
+        this._ioS.saveMetadata(StorageMode.Local, result)
+      }
+    })
+  }
+
 
 /***************************************************************************************************
  *                                         NODE SELECTION                                          *
@@ -264,31 +287,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
       // Si il s'agit d'une note ou l'ouvre
       this.openNote(data.node.key)
     }
-  }
-
-  editNote() {
-    let n: NoteMetadata = this.getSelectedNote()
-    const modal = this._modalService.create({
-      nzTitle: `Modifier <b>${n.title}</b>`,
-      nzContent: CustomizeNoteComponent,
-      nzComponentParams: {
-        inputNote: n
-      },
-      nzFooter: [
-        {
-          label: 'Valider',
-          onClick: componentInstance => componentInstance.trySubmitForm()
-        }
-      ]
-    })
-    modal.afterClose.subscribe( (result: Folder) => {
-      if (result) {
-        // Updating folder data
-        this._ioS.updateFolder(StorageMode.Local, result)
-        // Saving changes
-        this._ioS.saveListFolders(StorageMode.Local)
-      }
-    })
   }
 
 

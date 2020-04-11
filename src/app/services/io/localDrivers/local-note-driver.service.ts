@@ -12,6 +12,15 @@ import { v4 as uuidv4 } from 'uuid';
   providedIn: 'root'
 })
 export class LocalNoteDriverService implements INoteDriver {
+
+  /**
+   * Note contents are nos cached, so you directly read and write them
+   */
+
+  /**
+   * Cache of note metadatas, SHOULD always be un sync with filesystem
+   * because there is no function to write the whole cache to FS
+   */
   private _listNotesSubject = new BehaviorSubject<NoteMetadata[]>([])
 
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
@@ -65,8 +74,9 @@ export class LocalNoteDriverService implements INoteDriver {
     // Promise union between the 'note writing file promise' and the 'meta.json writing file promise'
     await Promise.all([
       this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
-      this._elS.fs.writeJson(this.getMetaPath(note.meta.uuid), this.getJsonFromMeta(note.meta))
+      this.saveMetadata(note.meta)
     ])
+    console.debug('wrote note content to FS')
     return note.meta
   }
 
@@ -88,13 +98,33 @@ export class LocalNoteDriverService implements INoteDriver {
     }
     // Writing note on disk
     await this.saveNote(note)
-    // Adding meta to cache
-    this._listNotesSubject.next(this._listNotesSubject.getValue().concat(meta))
     return meta
   }
 
-  editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
-    throw new Error("Method not implemented.");
+  async saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
+    if (!this._elS.isElectron) return
+    // Check if the note exist
+    let cache: NoteMetadata[] = this._listNotesSubject.getValue()
+    let isPresent = false
+    cache.forEach((meta, index) => {
+      if (meta.uuid == newMetadata.uuid) {
+        console.debug('meta presente en cache, on update')
+        isPresent = true
+        // Update existing
+        cache[index] = newMetadata
+      }
+    })
+    if (!isPresent) {
+      console.debug('meta non présente en cache, insertion')
+      // Insert new
+      cache = cache.concat(newMetadata)
+    }
+    // Update cache
+    this._listNotesSubject.next(cache)
+    // Write JSON
+    console.debug('wrote metadata note to FS')
+    await this._elS.fs.writeJson(this.getMetaPath(newMetadata.uuid), this.getJsonFromMeta(newMetadata))
+    return newMetadata
   }
 
   async removeNote(n: NoteMetadata): Promise<void> {

@@ -40,7 +40,7 @@ export interface INoteDriver {
    * Modifie les métadonnées d'une note
    * @param newMetadata Nouvelles métadonnées
    */
-  editMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
+  saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
 
   /**
    * Supprime définitivement unenote

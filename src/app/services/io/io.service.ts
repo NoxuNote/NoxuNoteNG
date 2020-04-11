@@ -64,6 +64,14 @@ export class IoService {
     }
   }
 
+  public saveMetadata(source: StorageMode, newMetadata: NoteMetadata): Promise<NoteMetadata> {
+    switch (source) {
+      case StorageMode.Local:
+        return this._localNoteDriverService.saveMetadata(newMetadata)
+      case StorageMode.Cloud:
+        return
+    }
+  }
 
   public removeNote(source: StorageMode, n: NoteMetadata): Promise<void> {
     switch (source) {

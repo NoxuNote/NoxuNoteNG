@@ -1,4 +1,4 @@
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 const homedir = require('os').homedir();
 
@@ -41,4 +41,5 @@ function copyFolderRecursiveSync( source, target ) {
 }
 
 // Script beginning
+fs.emptyDirSync(path.join(homedir, '/NoxuNoteNG'))
 copyFolderRecursiveSync('mockFiles/NoxuNoteNG', homedir)
