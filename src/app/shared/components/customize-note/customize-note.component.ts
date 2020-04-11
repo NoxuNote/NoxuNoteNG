@@ -40,8 +40,10 @@ export class CustomizeNoteComponent implements OnInit, AfterViewInit {
    */
   destroyModal(validateChanges: boolean = false): void {
     if (validateChanges && this.validateForm.valid) {
-      // Affectation des nouvelles valeurs
-      Object.assign(this.inputNote, this.validateForm.getRawValue())
+      // On renvoie une nouvelle notemetadata avec les donénes modifiées
+      let newMeta = Object.assign(new NoteMetadata(), this.inputNote)
+      newMeta = Object.assign(newMeta, this.validateForm.getRawValue())
+      this.modal.destroy(newMeta);
     }
     this.modal.destroy(this.inputNote);
   }

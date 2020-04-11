@@ -39,8 +39,10 @@ export class CustomizeFolderComponent implements OnInit, AfterViewInit {
    */
   destroyModal(validateChanges: boolean = false): void {
     if (validateChanges && this.validateForm.valid) {
-      // Affectation des nouvelles valeurs
-      Object.assign(this.inputFolder, this.validateForm.getRawValue())
+      // On renvoie un nouveau dossier avec les donénes modifiées
+      let newFolder = Object.assign(new Folder(), this.inputFolder)
+      newFolder = Object.assign(newFolder, this.validateForm.getRawValue())
+      this.modal.destroy(newFolder);
     }
     this.modal.destroy(this.inputFolder);
   }
