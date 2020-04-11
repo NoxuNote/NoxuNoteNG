@@ -6,7 +6,7 @@ import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
 import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
-import { debounce, take } from 'rxjs/operators';
+import { debounceTime, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
 import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
 import { CustomizeNoteComponent } from '../customize-note/customize-note.component';
@@ -74,7 +74,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Folder and note merge
     this.subscribtions.push(
       merge(this._ioS.getListFolders(this._source), this._ioS.getListNotes(this._source))
-        .pipe(debounce(() => timer(20)))
+        .pipe(debounceTime(20))
         .subscribe(()=> {
           this.generateTree()
         })
@@ -218,8 +218,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
       nzOkText: 'Oui',
       nzOkType: 'danger',
       nzOnOk: () => {
-        // tell the tabsManager to force close the note
-        this._tmS.close(note.uuid)
         this._ioS.removeNote(StorageMode.Local, note)
       },
       nzCancelText: 'Annuler'

@@ -123,14 +123,16 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Wait for changes treatment before closing editor
-    this.onChange().then(()=> {
-      this.willClose = true
-      this.subscriptions.map(s => s.unsubscribe())
-      if (!this.changesAreSaved) this.save().then(() => this.editor.destroy())
-      else this.editor.destroy()
-    })
+    // // Wait for changes treatment/save before closing editor
+    // this.onChange().then(()=> {
+      
+    // })
+    this.willClose = true
+    this.subscriptions.map(s => s.unsubscribe())
+    if (!this.changesAreSaved) this.save().then(() => this.editor.destroy())
+    else this.editor.destroy()
   }
+
 
   /**
    * Triggered when editor notices changes
@@ -138,6 +140,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   async onChange() {
     if (!this.willClose) {
       console.log("onChange called");
+      console.trace();
       this.onChangeSubject.next()
       this.changesAreSaved = false
       const newBlockCount = this.editor.blocks.getBlocksCount()

@@ -4,6 +4,7 @@ import { StorageMode } from '../io/StorageMode';
 import { NoteTab } from './NoteTab';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Note } from '../../types/Note';
+import { debounce, debounceTime } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -30,16 +31,20 @@ export class TabsManagerService implements OnInit {
 
   constructor(private _ioS: IoService) {
     // When metadatas changes
-    this._ioS.getListNotes(StorageMode.Local).subscribe(notes => {
-      console.debug('Mise à jour des métadonnées des onglets')
-      // Update tabs data
+    this._ioS.getListNotes(StorageMode.Local).pipe(debounceTime(100)).subscribe(notes => {
+      console.debug('Mise à jour des métadonnées des onglets', notes)
       let tabs: NoteTab[] = this._openedNotes.getValue()
-      notes.forEach(note => {
-        tabs.forEach((tab, index) => {
-          if (tab.savedNote.meta.uuid == note.uuid) {
-            tabs[index].savedNote.meta = note
-          }
-        })
+      // Removing unused tabs
+      let uuids = notes.map(n=>n.uuid)
+      tabs = tabs.filter(t=>uuids.includes(t.savedNote.meta.uuid))
+      // Update tabs data
+      tabs.forEach((tab, index) => {
+        console.debug('tabs : ', [...tabs])
+        console.log('updating tab', index);
+        // Find corresponding note meta
+        let noteMeta = notes.find(n=>n.uuid==tab.savedNote.meta.uuid)
+        // Update
+        tabs[index].savedNote.meta = noteMeta
       })
       // Push new tabs values
       this._openedNotes.next(tabs)
