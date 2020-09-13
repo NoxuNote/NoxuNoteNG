@@ -85,5 +85,5 @@
   <!-- <ul>
     <li *ngFor="let note of _notes" (click)="noteClick(note)">{{ note.title }}</li>
   </ul> -->
-
+  <button *ngIf="!hasSessionCookie" nz-button nzType="default" (click)="triggerLogin()">Se connecter</button>
 </div>
