@@ -111,6 +111,7 @@
     "@editorjs/warning": "1.1.1",
     "@tinynodes/ngx-editorjs": "3.1.0",
     "@tinynodes/ngx-editorjs-plugins": "2.1.0",
+    "dexie": "3.0.2",
     "fs-extra": "8.1.0",
     "json2typescript": "1.2.3",
     "ng-zorro-antd": "8.5.2",
