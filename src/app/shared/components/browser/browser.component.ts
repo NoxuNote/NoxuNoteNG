@@ -56,6 +56,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   _folders: Folder[] = []
 
+  searchValue: string
+
   /**
    * Emitted when tree has ended to generate
    */
