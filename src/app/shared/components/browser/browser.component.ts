@@ -22,6 +22,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
   @ViewChild('rootmenu') rootMenu: NzDropdownMenuComponent;
   @ViewChild('nzTree') nzTree: NzTreeComponent;
   
+  searchValue: string;
+
   /**
    * Noeuds de l'arbre de navigation lors de sa création
    */
