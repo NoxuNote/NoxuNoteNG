@@ -436,8 +436,15 @@ export class BrowserComponent implements OnInit, OnDestroy {
     return of(true)
   }
 
-  triggerLogin() {
-    this._authService.openModal()
+  triggerLogin(service: string) {
+    switch (service) {
+      case "noxunote":
+        this._authService.openModal()
+        break;
+      case "drive":
+        // Trigger Google drive login
+        break;
+    }
   }
 
 }
