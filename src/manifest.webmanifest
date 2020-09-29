@@ -1,8 +1,8 @@
 {
-  "name": "angular-electron",
-  "short_name": "angular-electron",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "name": "NoxuNote",
+  "short_name": "NoxuNote",
+  "theme_color": "#4287f5",
+  "background_color": "#ced4de",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
