@@ -32,7 +32,9 @@
     "e2e": "npm run build:prod && mocha --timeout 300000 --require ts-node/register e2e/**/*.spec.ts",
     "version": "conventional-changelog -i CHANGELOG.md -s -r 0 && git add CHANGELOG.md",
     "lint": "ng lint",
-    "mockfiles": "node mockfiles/copyMockFiles.js"
+    "mockfiles": "node mockFiles/copyMockFiles.js",
+    "copyHeaderJs": "cp ../header/dist/header.js src/app/shared/components/note-editor/customTools/header.js",
+    "copyParagraphJs": "cp ../paragraph/dist/paragraph.js src/app/shared/components/note-editor/customTools/paragraph.js"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "8.4.1",
@@ -48,6 +50,7 @@
     "@angular/platform-browser": "9.0.0",
     "@angular/platform-browser-dynamic": "9.0.0",
     "@angular/router": "9.0.0",
+    "@angular/service-worker": "9.0.0",
     "@ngx-translate/core": "11.0.1",
     "@ngx-translate/http-loader": "4.0.0",
     "@types/fs-extra": "8.0.1",

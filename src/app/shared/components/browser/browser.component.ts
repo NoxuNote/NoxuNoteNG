@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
-import { IoService, BrowserService } from '../../../services';
+import { IoService, BrowserService, AuthService } from '../../../services';
 import { Subscription, Observable, timer, Subject, merge, of } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
@@ -32,8 +32,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   selectedNode: NzTreeNode
 
+  hasSessionCookie: boolean = false;
+
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
-    private _modalService: NzModalService, private _browserService: BrowserService) { }
+    private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
@@ -53,6 +55,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Stores fetched folders
    */
   _folders: Folder[] = []
+
+  searchValue: string
 
   /**
    * Emitted when tree has ended to generate
@@ -93,6 +97,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe(()=>{
       this.createNote()
     }))
+    // Update auth state automatically
+    this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
   }
 
   /**
@@ -428,6 +434,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   beforeDrop(event: NzFormatBeforeDropEvent): Observable<boolean> {
     return of(true)
+  }
+
+  triggerLogin() {
+    this._authService.openModal()
   }
 
 }
