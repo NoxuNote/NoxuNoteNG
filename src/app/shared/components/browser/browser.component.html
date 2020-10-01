@@ -86,9 +86,15 @@
     <li *ngFor="let note of _notes" (click)="noteClick(note)">{{ note.title }}</li>
   </ul> -->
   <div id="addSource">
-    <h4>Se connecter</h4>
-    <button nz-button nzType="default" (click)="triggerLogin('noxunote')">NoxuNote Cloud</button>
+    <h4>Synchroniser</h4>
+    <button nz-button nzType="default" (click)="triggerLogin('noxunote')">
+      <img class="serviceIcon" src="../../../../assets/icons/logo_256.png" alt="">
+      NoxuNote Cloud
+    </button>
     <br>
-    <button nz-button nzType="default" (click)="triggerLogin('drive')">Google Drive</button>
+    <button nz-button nzType="default" (click)="triggerLogin('drive')">
+      <img class="serviceIcon" src="../../../../assets/drive.svg" alt="">
+      Google Drive
+    </button>
   </div>
 </div>
