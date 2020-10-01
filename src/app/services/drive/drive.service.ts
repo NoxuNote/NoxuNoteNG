@@ -1,25 +1,22 @@
 import { Injectable } from '@angular/core'
-import { GoogleAuthService } from 'ng-gapi'
+import { GoogleApiService, GoogleAuthService } from 'ng-gapi'
+import { BehaviorSubject } from 'rxjs';
 type GoogleUser = gapi.auth2.GoogleUser;
+type GoogleAuth = gapi.auth2.GoogleAuth;
 
 @Injectable({
   providedIn: 'root'
 })
 export class DriveService {
 
-  
+  private auth: GoogleAuth;
 
-  private user: GoogleUser;
+  constructor(private googleAuth: GoogleAuthService) {
+    this.googleAuth.getAuth().subscribe(auth => this.auth = auth)
+  }
 
-  constructor(private googleAuth: GoogleAuthService) { }
-
-  /**
-   * Open the Google OAuth login page for NoxuNote
-   */
   signIn() {
-    this.googleAuth.getAuth().subscribe(auth => {
-      auth.signIn().then(res => this.signInSuccessHandler(res));
-    });
+    this.auth.signIn().then(res => this.signInSuccessHandler(res));
   }
 
   public getToken(): string {
@@ -29,9 +26,7 @@ export class DriveService {
   }
 
   private signInSuccessHandler(res: GoogleUser) {
-    this.user = res;
     sessionStorage.setItem("GOOGLEAPIS_ACCESS_TOKEN", res.getAuthResponse().access_token)
   }
-
 
 }

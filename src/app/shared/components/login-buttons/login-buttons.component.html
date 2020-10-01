@@ -5,8 +5,12 @@
         NoxuNote Cloud
     </button>
     <br>
-    <button nz-button nzType="default" (click)="triggerLogin('drive')">
+    <button *ngIf="!isGoogleSignedIn" nz-button nzType="default" (click)="triggerLogin('drive')">
         <img class="serviceIcon" src="../../../../assets/drive.svg" alt="">
         Google Drive
     </button>
+    <div *ngIf="isGoogleSignedIn">
+        <img [src]="googleProfile.getImageUrl()" alt="">
+        Connecté à Google en tant que {{ googleProfile.getName() }}
+    </div>
 </div>
