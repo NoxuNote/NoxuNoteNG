@@ -112,6 +112,7 @@
     "@tinynodes/ngx-editorjs": "3.1.0",
     "@tinynodes/ngx-editorjs-plugins": "2.1.0",
     "fs-extra": "8.1.0",
+    "googleapis": "60.0.1",
     "json2typescript": "1.2.3",
     "ng-zorro-antd": "8.5.2",
     "tslib": "1.10.0"
