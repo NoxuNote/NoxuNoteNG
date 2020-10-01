@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
+import { LoginButtonsComponent } from './components/login-buttons/login-buttons.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { NzTabsModule } from "ng-zorro-antd/tabs";
     MathInputComponent,
     CustomizeFolderComponent,
     CustomizeNoteComponent,
+    LoginButtonsComponent,
   ],
   imports: [
     CommonModule,

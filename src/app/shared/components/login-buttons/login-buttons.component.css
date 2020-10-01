@@ -1,0 +1,11 @@
+div#addSource {
+    background-color: rgb(221, 221, 221);
+    border-radius: 10px;
+    margin-top: 5px;
+    padding: 13px;
+}
+  
+img.serviceIcon {
+    height: 1.5em;
+    margin-right: 5px;
+}

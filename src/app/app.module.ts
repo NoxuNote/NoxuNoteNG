@@ -21,11 +21,21 @@ import { AppComponent } from './app.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppConfig } from '../environments/environment';
+import { GoogleApiModule, NgGapiClientConfig, NG_GAPI_CONFIG } from 'ng-gapi';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
+
+let gapiClientConfig: NgGapiClientConfig = {
+  client_id: "252114792777-va39tg7tstcnrf6dndp2rfrm7t7mucrs.apps.googleusercontent.com",
+  discoveryDocs: ["https://analyticsreporting.googleapis.com/$discovery/rest?version=v4"],
+  scope: [
+    "https://www.googleapis.com/auth/drive.appdata",
+    "https://www.googleapis.com/auth/drive.file"
+  ].join(" ")
+};
 
 @NgModule({
   declarations: [AppComponent],
@@ -38,6 +48,10 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     SharedModule,
     HomeModule,
     AppRoutingModule,
+    GoogleApiModule.forRoot({
+      provide: NG_GAPI_CONFIG,
+      useValue: gapiClientConfig
+    }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
