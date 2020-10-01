@@ -22,8 +22,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
   @ViewChild('rootmenu') rootMenu: NzDropdownMenuComponent;
   @ViewChild('nzTree') nzTree: NzTreeComponent;
   
-  searchValue: string;
-
   /**
    * Noeuds de l'arbre de navigation lors de sa création
    */
@@ -438,8 +436,15 @@ export class BrowserComponent implements OnInit, OnDestroy {
     return of(true)
   }
 
-  triggerLogin() {
-    this._authService.openModal()
+  triggerLogin(service: string) {
+    switch (service) {
+      case "noxunote":
+        this._authService.openModal()
+        break;
+      case "drive":
+        // Trigger Google drive login
+        break;
+    }
   }
 
 }

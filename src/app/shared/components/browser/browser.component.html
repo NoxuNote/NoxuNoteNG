@@ -85,5 +85,16 @@
   <!-- <ul>
     <li *ngFor="let note of _notes" (click)="noteClick(note)">{{ note.title }}</li>
   </ul> -->
-  <button *ngIf="!hasSessionCookie" nz-button nzType="default" (click)="triggerLogin()">Se connecter</button>
+  <div id="addSource">
+    <h4>Synchroniser</h4>
+    <button nz-button nzType="default" (click)="triggerLogin('noxunote')">
+      <img class="serviceIcon" src="../../../../assets/icons/logo_256.png" alt="">
+      NoxuNote Cloud
+    </button>
+    <br>
+    <button nz-button nzType="default" (click)="triggerLogin('drive')">
+      <img class="serviceIcon" src="../../../../assets/drive.svg" alt="">
+      Google Drive
+    </button>
+  </div>
 </div>
