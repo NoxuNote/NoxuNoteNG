@@ -1,7 +1,6 @@
-import { ThrowStmt } from '@angular/compiler';
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { GoogleAuthService } from 'ng-gapi';
-import { AuthService, DriveService } from '../../../services';
+import { AuthService } from '../../../services';
 type GoogleUser   = gapi.auth2.GoogleUser;
 type BasicProfile = gapi.auth2.BasicProfile;
 type GoogleAuth = gapi.auth2.GoogleAuth;
@@ -11,7 +10,7 @@ type GoogleAuth = gapi.auth2.GoogleAuth;
   templateUrl: './login-buttons.component.html',
   styleUrls: ['./login-buttons.component.css']
 })
-export class LoginButtonsComponent {
+export class LoginButtonsComponent  {
 
   // Google auth instance
   googleAuth: GoogleAuth
@@ -22,26 +21,31 @@ export class LoginButtonsComponent {
   googleProfile: BasicProfile
 
   // Update Google profile informations
+  // Because this function can be ran outside angular, we need to
+  // call component updates inside zone
   updateInformations = signedIn => {
-    this.isGoogleSignedIn = signedIn 
-    if (signedIn) {
-      this.googleUser = this.googleAuth.currentUser.get()
-      this.googleProfile = this.googleUser.getBasicProfile()
-    }
+    this._zone.run(() => {
+      this.isGoogleSignedIn = signedIn 
+      if (signedIn) {
+        this.googleUser = this.googleAuth.currentUser.get()
+        this.googleProfile = this.googleUser.getBasicProfile()
+      }
+    })
   }
 
   constructor(
+    private _zone: NgZone,
     private _authService: AuthService, 
-    private _driveService: DriveService,
-    private _googleAuth: GoogleAuthService
+    private _googleAuthService: GoogleAuthService
   ) { 
-    this._googleAuth.getAuth().subscribe(auth => {
+    // Wait for google api to deliver auth object
+    this._googleAuthService.getAuth().subscribe(auth => {
       this.googleAuth = auth
       this.updateInformations(this.googleAuth.isSignedIn.get())
       this.googleAuth.isSignedIn.listen(this.updateInformations)
     })
-
   }
+  
 
   triggerLogin(service: string) {
     switch (service) {
@@ -49,7 +53,18 @@ export class LoginButtonsComponent {
         this._authService.openModal()
         break;
       case "drive":
-        this._driveService.signIn()
+        this.googleAuth.signIn();
+        break;
+    }
+  }
+
+  triggerLogout(service: string) {
+    switch (service) {
+      case "noxunote":
+        this._authService.openModal()
+        break;
+      case "drive":
+        this.googleAuth.signOut()
         break;
     }
   }

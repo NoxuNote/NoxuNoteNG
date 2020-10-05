@@ -10,7 +10,11 @@
         Google Drive
     </button>
     <div *ngIf="isGoogleSignedIn">
-        <img [src]="googleProfile.getImageUrl()" alt="">
-        Connecté à Google en tant que {{ googleProfile.getName() }}
+        <button nz-button nzType="default" (click)="triggerLogout('drive')">
+            <img class="serviceIcon" src="../../../../assets/drive.svg" alt="">
+            Se déconnecter
+        </button><br>
+        <img class="serviceIcon" [src]="googleProfile.getImageUrl()" alt="">
+        Connecté en tant que <b>{{ googleProfile.getName() }}</b>
     </div>
 </div>
