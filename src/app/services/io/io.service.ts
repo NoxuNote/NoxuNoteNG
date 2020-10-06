@@ -24,7 +24,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.getNote(uuid)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return of(null)
     }
   }
@@ -33,7 +33,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.getListNotes()
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return of(null)
     }
   }
@@ -41,7 +41,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.saveNote(note)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -50,7 +50,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         this._localNoteDriverService.refreshListNotes()
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -59,7 +59,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.createNote(title)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -68,7 +68,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.saveMetadata(newMetadata)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -77,7 +77,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localNoteDriverService.removeNote(n)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -94,7 +94,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localFolderDriverService.getListFolders()
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return of(null)
     }
   }
@@ -103,7 +103,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         this._localFolderDriverService.refreshListFolders()
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -112,7 +112,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localFolderDriverService.saveListFolders()
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -121,7 +121,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         return this._localFolderDriverService.createFolder(name, parentId)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -130,7 +130,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         this._localFolderDriverService.updateFolder(f)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -139,7 +139,7 @@ export class IoService {
     switch (source) {
       case StorageMode.Local:
         this._localFolderDriverService.removeFolder(f)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }
@@ -170,7 +170,7 @@ export class IoService {
           }
         })
         this._localFolderDriverService.removeFolder(folderToRemove)
-      case StorageMode.Cloud:
+      case StorageMode.GoogleDrive:
         return
     }
   }

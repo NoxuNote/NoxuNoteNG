@@ -113,9 +113,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
     // Création d'un noeud racine
     let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root");
-    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root");
+    let driveRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Drive", "cloud_root");
     // Nettoyer l'arbre
-    this.nodes = [localRoot, cloudRoot]
+    this.nodes = [localRoot, driveRoot]
     // Pour chaque élément sans racine
     let folders: Folder[] = [...this._folders] // copie des dossiers
     folders.forEach((f,index)=>{
