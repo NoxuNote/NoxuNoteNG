@@ -1,4 +1,6 @@
 <div>
+  <button nz-button nzType="primary" (click)="sync()">Synchroniser</button>
+
   Mode : <b>{{_source==0 ? 'Desktop' : 'Web'}}</b>&nbsp;
   <nz-input-group [nzSuffix]="suffixIcon">
     <input type="text" nz-input placeholder="Search" [(ngModel)]="searchValue" />

@@ -10,6 +10,7 @@ import { debounceTime, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
 import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
 import { CustomizeNoteComponent } from '../customize-note/customize-note.component';
+import { GoogleNoteDriver } from '../../../services/io/googleDrivers/google-note-driver.service';
 
 @Component({
   selector: 'app-browser',
@@ -35,7 +36,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   hasSessionCookie: boolean = false;
 
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
-    private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService) { }
+    private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService, private _driveS: GoogleNoteDriver) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
@@ -434,6 +435,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
    */
   beforeDrop(event: NzFormatBeforeDropEvent): Observable<boolean> {
     return of(true)
+  }
+  
+  sync() {
+    this._driveS.getListNotes()
   }
 
 }
