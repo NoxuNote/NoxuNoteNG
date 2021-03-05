@@ -1,14 +1,14 @@
 import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter } from '@angular/core';
-import EditorJS from '@editorjs/editorjs';
+import EditorJS, { BlockAPI } from '@editorjs/editorjs';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
-import { Note } from '../../../types/Note';
+import Underline from '@editorjs/underline';import { Note } from '../../../types/Note';
+import Marker from "@editorjs/marker";
 import { IoService, StorageMode, MathjaxService } from "../../../services";
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
-import { timingSafeEqual } from 'crypto';
 import { NzContextMenuService } from 'ng-zorro-antd';
 
 @Component({
@@ -93,9 +93,22 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       autofocus: false,
       data: this.note.content as any,
       placeholder: "Cliquez ici et commencer à vous exprimer !",
+      inlineToolbar: true,
       tools: {
         paragraph: Paragraph,
-        header: Header
+        header: {
+          class: Header,
+          config: {
+            placeholder: 'Titre'
+          },
+          shortcut: 'CMD+H'
+        },
+        underline: Underline,
+        Marker: {
+          class: Marker,
+          shortcut: 'CTRL+M',
+          inlineToolbar: true
+        }
       },
       /**
       * onReady callback
@@ -147,13 +160,13 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
        * the typeset disappears, so we need to check the current edited block every time.
        */
       if (newBlockCount != this.blocksCount) {
-        const currentBlock = this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
-        if (this._mjS.testUnwrappedFormula(currentBlock.innerHTML)) {
+        const currentBlock = <BlockAPI> this.editor.blocks.getBlockByIndex(this.editor.blocks.getCurrentBlockIndex())
+        if (this._mjS.testUnwrappedFormula(currentBlock.holder.innerHTML)) {
           const restore = saveCaretPosition(currentBlock)
-          await this.typesetBlock(currentBlock)
+          await this.typesetBlock(currentBlock.holder)
           restore()
         }
-        this.bindOnFormulaClick(currentBlock)
+        this.bindOnFormulaClick(currentBlock.holder)
         this.blocksCount = newBlockCount
       }
     }
@@ -228,8 +241,8 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   async typeset() {
     const count = this.editor.blocks.getBlocksCount()
     for (let i = 0; i < count; i++) {
-      const block = this.editor.blocks.getBlockByIndex(i)
-      if (this._mjS.testUnwrappedFormula(block.innerHTML)) this.typesetBlock(block)
+      const block = <BlockAPI> this.editor.blocks.getBlockByIndex(i)
+      if (this._mjS.testUnwrappedFormula(block.holder.innerHTML)) this.typesetBlock(block.holder)
     }
     this._mjS.clearAndUpdate()
   }  
