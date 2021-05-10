@@ -6,13 +6,16 @@ import { NoteMetadata } from '../../types/NoteMetadata';
 import { Note } from '../../types/Note';
 import { Folder } from '../../types/Folder';
 import { LocalFolderDriverService } from './localDrivers/local-folder-driver.service';
+import { CloudNoteDriverService } from './cloudDrivers/cloud-note-driver.service';
 
+
+let url = "http://localhost:4200/"
 
 @Injectable({
   providedIn: 'root'
 })
 export class IoService {
-  constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService) { }
+  constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService, private _cloudNoteDriverService: CloudNoteDriverService) { }
 
   /*
    *
@@ -25,7 +28,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.getNote(uuid)
       case StorageMode.Cloud:
-        return of(null)
+        return this._cloudNoteDriverService.getNote(uuid)
     }
   }
 
