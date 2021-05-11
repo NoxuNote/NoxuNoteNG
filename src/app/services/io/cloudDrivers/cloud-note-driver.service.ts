@@ -6,7 +6,7 @@ import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
-let url = "http://localhost:4455/mynotes/notes/"
+let url = "http://127.0.0.1:4455/mynotes/notes/"
 
 @Injectable({
   providedIn: 'root'
