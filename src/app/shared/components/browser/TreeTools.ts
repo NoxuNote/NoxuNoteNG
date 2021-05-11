@@ -14,7 +14,8 @@ export class TreeTools {
       isFolder: true,
       expanded: true,
       isRoot: true,
-      selectable: false
+      selectable: false,
+      storage: undefined
     }
   }
 
@@ -26,7 +27,8 @@ export class TreeTools {
       children: [],
       isLeaf: false,
       isFolder: true,
-      isRoot: false
+      isRoot: false,
+      storage: undefined
     }
   }
 
@@ -38,6 +40,7 @@ export class TreeTools {
       isLeaf: true,
       isFolder: false,
       isRoot: false,
+      storage: undefined
     }
   }
 
@@ -53,6 +56,7 @@ export class TreeTools {
       if (f.parentFolder != undefined && f.parentFolder == parent.uuid) {
         // Création et insertion du noeud
         let newNode = TreeTools.createFolderNode(f)
+        newNode.storage = node.storage
         newNode.expanded = expandedNodelist.includes(newNode.key)
         node.children.push(newNode)
         // Insertion de ses enfants
