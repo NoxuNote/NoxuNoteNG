@@ -7,15 +7,13 @@ import { Note } from '../../types/Note';
 import { Folder } from '../../types/Folder';
 import { LocalFolderDriverService } from './localDrivers/local-folder-driver.service';
 import { CloudNoteDriverService } from './cloudDrivers/cloud-note-driver.service';
-
-
-let url = "http://localhost:4200/"
+import { CloudFolderDriverService } from './cloudDrivers/cloud-folder-driver.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IoService {
-  constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService, private _cloudNoteDriverService: CloudNoteDriverService) { }
+  constructor(private _localNoteDriverService: LocalNoteDriverService, private _localFolderDriverService: LocalFolderDriverService, private _cloudNoteDriverService: CloudNoteDriverService, private _cloudFolderDriverService: CloudFolderDriverService) { }
 
   /*
    *
@@ -98,7 +96,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localFolderDriverService.getListFolders()
       case StorageMode.Cloud:
-        return of(null)
+        return this._cloudFolderDriverService.getListFolders()
     }
   }
 
@@ -107,7 +105,7 @@ export class IoService {
       case StorageMode.Local:
         this._localFolderDriverService.refreshListFolders()
       case StorageMode.Cloud:
-        return
+        this._cloudFolderDriverService.refreshListFolders()
     }
   }
 
@@ -116,7 +114,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localFolderDriverService.saveListFolders()
       case StorageMode.Cloud:
-        return
+        return this._cloudFolderDriverService.saveListFolders()
     }
   }
 
@@ -125,25 +123,25 @@ export class IoService {
       case StorageMode.Local:
         return this._localFolderDriverService.createFolder(name, parentId)
       case StorageMode.Cloud:
-        return
+        return this._cloudFolderDriverService.createFolder(name, parentId)
     }
   }
 
   updateFolder(source: StorageMode, f: Folder) {
     switch (source) {
       case StorageMode.Local:
-        this._localFolderDriverService.updateFolder(f)
+        return this._localFolderDriverService.updateFolder(f)
       case StorageMode.Cloud:
-        return
+        return this._cloudFolderDriverService.updateFolder(f)
     }
   }
 
   removeFolder(source: StorageMode, f: Folder) {
     switch (source) {
       case StorageMode.Local:
-        this._localFolderDriverService.removeFolder(f)
+        return this._localFolderDriverService.removeFolder(f)
       case StorageMode.Cloud:
-        return
+        return this._cloudFolderDriverService.removeFolder(f)
     }
   }
 
