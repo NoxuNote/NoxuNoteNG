@@ -37,7 +37,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.getListNotes()
       case StorageMode.Cloud:
-        return of(null)
+        return this._cloudNoteDriverService.getListNotes()
     }
   }
   public saveNote(source: StorageMode, note: Note): Promise<NoteMetadata> {
@@ -45,7 +45,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.saveNote(note)
       case StorageMode.Cloud:
-        return
+        return this._cloudNoteDriverService.saveNote(note)
     }
   }
 
@@ -54,7 +54,7 @@ export class IoService {
       case StorageMode.Local:
         this._localNoteDriverService.refreshListNotes()
       case StorageMode.Cloud:
-        return
+        this._cloudNoteDriverService.refreshListNotes()
     }
   }
 
@@ -63,7 +63,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.createNote(title)
       case StorageMode.Cloud:
-        return
+        return this._cloudNoteDriverService.createNote(title)
     }
   }
 
@@ -72,7 +72,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.saveMetadata(newMetadata)
       case StorageMode.Cloud:
-        return
+        return this._cloudNoteDriverService.saveMetadata(newMetadata)
     }
   }
 
@@ -81,7 +81,7 @@ export class IoService {
       case StorageMode.Local:
         return this._localNoteDriverService.removeNote(n)
       case StorageMode.Cloud:
-        return
+        return this._cloudNoteDriverService.removeNote(n)
     }
   }
 
