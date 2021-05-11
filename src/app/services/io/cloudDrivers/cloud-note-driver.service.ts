@@ -52,7 +52,6 @@ export class CloudNoteDriverService implements INoteDriver {
     return this.http.put<NoteMetadata>(url+newMetadata.uuid, newMetadata).toPromise()
   }
   removeNote(n: NoteMetadata): Promise<void> {
-    this.http.delete(url + n.uuid).toPromise()
-    return
+    return this.http.delete<void>(url + n.uuid).toPromise()
   }
 }
