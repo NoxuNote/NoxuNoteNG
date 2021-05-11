@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, from } from 'rxjs';
+import { Observable, BehaviorSubject, from, forkJoin } from 'rxjs';
 import { INoteDriver } from '../INoteDriver';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
-let url = "http://localhost:4200/"
+let url = "http://localhost:4200/notes/"
 
 @Injectable({
   providedIn: 'root'
@@ -25,29 +26,33 @@ export class CloudNoteDriverService implements INoteDriver {
   constructor(private http: HttpClient) { }
 
   getListNotes(): Observable<NoteMetadata[]> {
-    return this.http.get<NoteMetadata[]>(url+"/notes")
+    return this.http.get<NoteMetadata[]>(url)
   }
 
   refreshListNotes() {
-    throw new Error('Method not implemented.');
+    this._listNotesSubject.next([])
+    this.getListNotes().subscribe(note => this._listNotesSubject.next(note))
   }
 
   getNote(uuid: string): Observable<Note> {
-    throw new Error('Method not implemented.');
+    let meta = this.http.get<NoteMetadata>(url+uuid)
+    let content = this.http.get<Object>(url+uuid+"/content")
+    return forkJoin([meta, content]).pipe(map(note => ({meta: note[0], content: note[1]})))
   }
 
   saveNote(note: Note): Promise<NoteMetadata> {
-    throw new Error('Method not implemented.');
+    return this.http.put<NoteMetadata>(url+note.meta.uuid+"/content", JSON.stringify(note.content)).toPromise()
   }
 
   createNote(title?: string): Promise<NoteMetadata> {
-    throw new Error('Method not implemented.');
+    return this.http.post<NoteMetadata>(url, title).toPromise()
   }
   
   saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
-    throw new Error('Method not implemented.');
+    return this.http.put<NoteMetadata>(url+newMetadata.uuid, newMetadata).toPromise()
   }
   removeNote(n: NoteMetadata): Promise<void> {
-    throw new Error('Method not implemented.');
+    this.http.delete(url + n.uuid).toPromise()
+    return
   }
 }
