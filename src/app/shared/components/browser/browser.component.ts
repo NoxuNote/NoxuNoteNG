@@ -55,6 +55,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Stores fetched folders
    */
   _localFolders: Folder[] = []
+  _cloudFolders: Folder[] = []
 
   searchValue: string
 
@@ -67,24 +68,31 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Automatically fetch noteList with debounce to prevent generateTree overcalls
-    this.subscribtions.push(this._ioS.getListNotes(this._source).subscribe(metas => {
+    this.subscribtions.push(this._ioS.getListNotes(StorageMode.Local).subscribe(metas => {
       this._notes = metas
     }))
     this.updateNoteList()
     // Automatically fetch folder list
-    this.subscribtions.push(this._ioS.getListFolders(this._source).subscribe(folders => {
+    this.subscribtions.push(this._ioS.getListFolders(StorageMode.Local).subscribe(folders => {
       console.debug('nouveaux dossiers : ', folders)
       this._localFolders = folders
     }))
+    this.subscribtions.push(this._ioS.getListFolders(StorageMode.Cloud).subscribe(folders => {
+      console.debug('nouveaux dossiers : ', folders)
+      this._cloudFolders = folders
+    }))
     // Folder and note merge
     this.subscribtions.push(
-      merge(this._ioS.getListFolders(this._source), this._ioS.getListNotes(this._source))
+      merge(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
+            this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud))
         .pipe(debounceTime(100))
         .subscribe(() => {
           this.generateTree()
         })
     )
-    this._ioS.refreshListFolders(this._source)
+    this._ioS.refreshListFolders(StorageMode.Local)
+    this._ioS.refreshListFolders(StorageMode.Cloud) 
+
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
       console.debug("selecting " + uuid)
@@ -101,6 +109,22 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
   }
 
+  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[]){
+    folders.forEach((f, index) => {
+      if (!f.parentFolder || f.parentFolder == "") {
+        // Création et insertion du noeud
+        let noRootNode = TreeTools.createFolderNode(f)
+        // Si le noeud était ouvert, on le réouvre
+        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
+        noRootNode.storage = root.storage
+        root.children.push(noRootNode)
+        // Insertion de ses enfants
+        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
+        TreeTools.insertChildren(noRootNode, f, folders, this._notes, openedFoldersId)
+      }
+    })
+  }
+
   /**
    * Génère les noeuds d'affichage des dossiers
    * @param folders Liste des dossiers
@@ -112,35 +136,16 @@ export class BrowserComponent implements OnInit, OnDestroy {
       openedFoldersId = this.nzTree.getExpandedNodeList().map(node => node.key)
     }
     // Création d'un noeud racine
-    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root");
-    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root");
-    let obj :NzTreeNodeOptions = {
-      title: "Mes Documents Cloud",
-      key: "cloudyFolder",
-      children: [],
-      isLeaf: false,
-      isFolder: true,
-      isRoot: false
-    }
-    cloudRoot.children.push(obj)
+    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", "local");
+    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", "cloud");
 
     // Nettoyer l'arbre
     this.nodes = [localRoot, cloudRoot]
     // Pour chaque élément sans racine
     let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
-    localFolders.forEach((f, index) => {
-      if (!f.parentFolder || f.parentFolder == "") {
-        // Création et insertion du noeud
-        let noRootNode = TreeTools.createFolderNode(f)
-        // Si le noeud était ouvert, on le réouvre
-        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
-        noRootNode.storage="local"
-        localRoot.children.push(noRootNode)
-        // Insertion de ses enfants
-        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, localFolders, this._notes, openedFoldersId)
-      }
-    })
+    let cloudFolders: Folder[] = [...this._cloudFolders]
+    this.placeInTree(localFolders, localRoot, openedFoldersId)
+    this.placeInTree(cloudFolders, cloudRoot, openedFoldersId)
     console.debug("Fin de la génération de l'arbre")
     this.treeGeneratedSubject.next()
   }
@@ -222,9 +227,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
 
   async createNote() {
-    console.log(this.selectedNode)
-    switch (this._source) {
-      case StorageMode.Local:
+    console.log(this.selectedNode.origin.storage)
+    switch (this.selectedNode.origin.storage) {
+      case "local":
         let f = this.getSelectedFolder()
         if (!f) {
           // Si pas de dossier sélectionné, on en crée un
@@ -246,7 +251,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
             this._tmS.open(newNote.uuid)
           })
         })
-      case StorageMode.Cloud:
+      case "cloud":
         let newNoteCloud: NoteMetadata = await this._ioS.createNote(StorageMode.Cloud)
         console.log("new", newNoteCloud);
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {

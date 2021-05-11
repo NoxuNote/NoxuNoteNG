@@ -9,16 +9,24 @@ import { Folder } from '../../../types/Folder';
 })
 export class CloudFolderDriverService implements IFolderDriver {
   // Cache
-  private _listFoldersSubject = new BehaviorSubject<Folder[]>([])
+  private _listFoldersSubject = new BehaviorSubject<Folder[]>([{
+    uuid: "cloud",
+    title: "Mes Documents Cloud",
+    color: "#FFFFFF",
+    description: "",
+    noteUUIDs: [],
+    parentFolder: null,
+    data: {}
+  }])
 
   constructor() { }
 
   getListFolders(): Observable<Folder[]> {
-    throw new Error('Method not implemented.');
+    return this._listFoldersSubject.asObservable();
   }
 
   refreshListFolders() {
-    throw new Error('Method not implemented.');
+    //TO DO
   }
 
   saveListFolders(): Promise<void> {

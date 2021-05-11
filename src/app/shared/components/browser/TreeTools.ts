@@ -5,7 +5,7 @@ import { NoteMetadata } from "../../../types/NoteMetadata"
 export class TreeTools {
 
   /** Crée un noeud de dossier vide */
-  static createCustomFolder(title: string, key: string): NzTreeNodeOptions {
+  static createCustomFolder(title: string, key: string, storage: string): NzTreeNodeOptions {
     return {
       title: title,
       key: key,
@@ -15,7 +15,7 @@ export class TreeTools {
       expanded: true,
       isRoot: true,
       selectable: false,
-      storage: undefined
+      storage: storage
     }
   }
 
