@@ -92,7 +92,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
       holder: this.editorContainer.nativeElement,
       autofocus: false,
       data: this.note.content as any,
-      placeholder: "Cliquez ici et commencer à vous exprimer !",
+      placeholder: "Cliquez ici et commencez à vous exprimer !",
       inlineToolbar: true,
       tools: {
         paragraph: Paragraph,
