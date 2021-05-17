@@ -1,11 +1,12 @@
 import { Folder } from "../../../types/Folder"
 import { NzTreeNodeOptions } from "ng-zorro-antd"
 import { NoteMetadata } from "../../../types/NoteMetadata"
+import { StorageMode } from "../../../services/io/StorageMode"
 
 export class TreeTools {
 
   /** Crée un noeud de dossier vide */
-  static createCustomFolder(title: string, key: string, storage: string): NzTreeNodeOptions {
+  static createCustomFolder(title: string, key: string, storage: StorageMode): NzTreeNodeOptions {
     return {
       title: title,
       key: key,
