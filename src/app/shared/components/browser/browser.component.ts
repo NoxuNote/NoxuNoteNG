@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService, BrowserService, AuthService } from '../../../services';
-import { Subscription, Observable, timer, Subject, merge, of } from 'rxjs';
+import { Subscription, Observable, Subject, of, concat } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
@@ -83,7 +83,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }))
     // Folder and note merge
     this.subscribtions.push(
-      merge(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
+      concat(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
             this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud))
         .pipe(debounceTime(100))
         .subscribe(() => {
@@ -253,13 +253,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
         })
       case "cloud":
         let newNoteCloud: NoteMetadata = await this._ioS.createNote(StorageMode.Cloud)
-        console.log("new", newNoteCloud);
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
           setImmediate(() => {
             this.setSelectedNode(newNoteCloud.uuid)
             this._tmS.open(newNoteCloud.uuid)
           })
         })
+        console.log("new", newNoteCloud);
     }
 
   }
