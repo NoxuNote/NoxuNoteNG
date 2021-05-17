@@ -26,12 +26,11 @@ export class CloudNoteDriverService implements INoteDriver {
   constructor(private http: HttpClient) { }
 
   getListNotes(): Observable<NoteMetadata[]> {
-    return this.http.get<NoteMetadata[]>(url)
+    return this._listNotesSubject.asObservable()
   }
 
   refreshListNotes() {
-    this._listNotesSubject.next([])
-    this.getListNotes().subscribe(note => this._listNotesSubject.next(note))
+    this.http.get<NoteMetadata[]>(url).subscribe(note => this._listNotesSubject.next(note))
   }
 
   getNote(uuid: string): Observable<Note> {
@@ -44,8 +43,10 @@ export class CloudNoteDriverService implements INoteDriver {
     return this.http.put<NoteMetadata>(url+note.meta.uuid+"/content", JSON.stringify(note.content)).toPromise()
   }
 
-  createNote(title?: string): Promise<NoteMetadata> {
-    return this.http.post<NoteMetadata>(url, title).toPromise()
+  async createNote(title?: string): Promise<NoteMetadata> {
+    const newNote = await this.http.post<NoteMetadata>(url, title).toPromise()
+    this.refreshListNotes();
+    return newNote
   }
   
   saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {

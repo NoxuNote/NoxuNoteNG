@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService, BrowserService, AuthService } from '../../../services';
-import { Subscription, Observable, Subject, of, concat } from 'rxjs';
+import { Subscription, Observable, Subject, of, combineLatest } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
@@ -34,6 +34,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   hasSessionCookie: boolean = false;
 
+
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
     private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService) { }
 
@@ -50,6 +51,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Stores fetched notes metadata
    */
   _notes: NoteMetadata[] = []
+  _cloudNotes: NoteMetadata[] = [];
 
   /**
    * Stores fetched folders
@@ -71,6 +73,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.subscribtions.push(this._ioS.getListNotes(StorageMode.Local).subscribe(metas => {
       this._notes = metas
     }))
+    this.subscribtions.push(this._ioS.getListNotes(StorageMode.Cloud).subscribe(metas => {
+      this._cloudNotes = metas
+    }))
     this.updateNoteList()
     // Automatically fetch folder list
     this.subscribtions.push(this._ioS.getListFolders(StorageMode.Local).subscribe(folders => {
@@ -83,7 +88,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }))
     // Folder and note merge
     this.subscribtions.push(
-      concat(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
+      combineLatest(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
             this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud))
         .pipe(debounceTime(100))
         .subscribe(() => {
@@ -109,7 +114,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
   }
 
-  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[]){
+  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]){
     folders.forEach((f, index) => {
       if (!f.parentFolder || f.parentFolder == "") {
         // Création et insertion du noeud
@@ -120,7 +125,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         root.children.push(noRootNode)
         // Insertion de ses enfants
         // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, folders, this._notes, openedFoldersId)
+        TreeTools.insertChildren(noRootNode, f, folders, notes, openedFoldersId)
       }
     })
   }
@@ -143,9 +148,17 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.nodes = [localRoot, cloudRoot]
     // Pour chaque élément sans racine
     let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
-    let cloudFolders: Folder[] = [...this._cloudFolders]
-    this.placeInTree(localFolders, localRoot, openedFoldersId)
-    this.placeInTree(cloudFolders, cloudRoot, openedFoldersId)
+    let cloudFolders: Folder[] = [{
+      uuid: "cloud",
+      title: "Mes Documents Cloud",
+      color: "#FFFFFF",
+      description: "",
+      noteUUIDs: this._cloudNotes.map(note => note.uuid),
+      parentFolder: null,
+      data: {}
+    }]
+    this.placeInTree(localFolders, localRoot, openedFoldersId, this._notes)
+    this.placeInTree(cloudFolders, cloudRoot, openedFoldersId, this._cloudNotes)
     console.debug("Fin de la génération de l'arbre")
     this.treeGeneratedSubject.next()
   }
@@ -208,10 +221,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
    ***************************************************************************************************/
 
   /**
-   * Returns the selected folder, undefined otherwise
+   * Returns the selected note, undefined otherwise
    */
   getSelectedNote(): NoteMetadata {
-    return this._notes.find(n => n.uuid == this.selectedNode.key)
+    return this._notes.find(n => n.uuid == this.selectedNode.key) || this._cloudNotes.find(n => n.uuid == this.selectedNode.key)
   }
 
   /**
@@ -228,9 +241,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   async createNote() {
     console.log(this.selectedNode.origin.storage)
+    var f = this.getSelectedFolder()
     switch (this.selectedNode.origin.storage) {
       case "local":
-        let f = this.getSelectedFolder()
         if (!f) {
           // Si pas de dossier sélectionné, on en crée un
           f = await this.newFolder(true)
@@ -253,12 +266,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
         })
       case "cloud":
         let newNoteCloud: NoteMetadata = await this._ioS.createNote(StorageMode.Cloud)
-        this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
-          setImmediate(() => {
-            this.setSelectedNode(newNoteCloud.uuid)
-            this._tmS.open(newNoteCloud.uuid)
-          })
-        })
         console.log("new", newNoteCloud);
     }
 
