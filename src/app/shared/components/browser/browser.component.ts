@@ -88,15 +88,15 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }))
     // Folder and note merge
     this.subscribtions.push(
-      combineLatest(this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
-            this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud))
+      combineLatest([this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
+                     this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud)])
         .pipe(debounceTime(100))
         .subscribe(() => {
           this.generateTree()
         })
     )
     this._ioS.refreshListFolders(StorageMode.Local)
-    this._ioS.refreshListFolders(StorageMode.Cloud) 
+    this._ioS.refreshListFolders(StorageMode.Cloud)
 
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
@@ -114,7 +114,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
   }
 
-  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]){
+  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]) {
     folders.forEach((f, index) => {
       if (!f.parentFolder || f.parentFolder == "") {
         // Création et insertion du noeud
@@ -141,8 +141,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
       openedFoldersId = this.nzTree.getExpandedNodeList().map(node => node.key)
     }
     // Création d'un noeud racine
-    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", "local");
-    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", "cloud");
+    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
+    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);
 
     // Nettoyer l'arbre
     this.nodes = [localRoot, cloudRoot]
@@ -231,19 +231,19 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Calls tabsManagerService to open a note
    * @param uuid Note uuid
    */
-  openNote(uuid: string) {
-    this._tmS.open(uuid);
+  openNote(uuid: string, storage: StorageMode) {
+    this._tmS.open(uuid, storage);
   }
 
-  async getStorageMode(node){}
-  
+  async getStorageMode(node) { }
+
 
 
   async createNote() {
     console.log(this.selectedNode.origin.storage)
     var f = this.getSelectedFolder()
     switch (this.selectedNode.origin.storage) {
-      case "local":
+      case StorageMode.Local:
         if (!f) {
           // Si pas de dossier sélectionné, on en crée un
           f = await this.newFolder(true)
@@ -261,28 +261,36 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
           setImmediate(() => {
             this.setSelectedNode(newNote.uuid)
-            this._tmS.open(newNote.uuid)
+            this._tmS.open(newNote.uuid, StorageMode.Local)
           })
         })
-      case "cloud":
+      case StorageMode.Cloud:
         let newNoteCloud: NoteMetadata = await this._ioS.createNote(StorageMode.Cloud)
         console.log("new", newNoteCloud);
+        this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
+          setImmediate(() => {
+            this.setSelectedNode(newNoteCloud.uuid)
+            this._tmS.open(newNoteCloud.uuid, StorageMode.Cloud)
+          })
+        })
     }
 
   }
 
   removeNote() {
     const note: NoteMetadata = this.getSelectedNote()
+
     this._modalService.confirm({
       nzTitle: `Êtes-vous sur de vouloir supprimer <b>${note.title}</b> ?`,
       nzContent: '',
       nzOkText: 'Oui',
       nzOkType: 'danger',
       nzOnOk: () => {
-        this._ioS.removeNote(StorageMode.Local, note)
+            this._ioS.removeNote(this.selectedNode.parentNode.origin.storage, note)
       },
       nzCancelText: 'Annuler'
     })
+
   }
 
 
@@ -344,7 +352,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
       this.openFolder(data.node)
     } else {
       // Si il s'agit d'une note ou l'ouvre
-      this.openNote(data.node.key)
+      this.openNote(data.node.key, data.node.parentNode.origin.storage)
     }
   }
 
