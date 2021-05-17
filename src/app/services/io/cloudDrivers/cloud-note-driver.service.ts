@@ -5,6 +5,7 @@ import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+import { JsonConverter } from 'json2typescript';
 
 let url = "http://127.0.0.1:4455/mynotes/notes/"
 
@@ -35,8 +36,8 @@ export class CloudNoteDriverService implements INoteDriver {
 
   getNote(uuid: string): Observable<Note> {
     let meta = this.http.get<NoteMetadata>(url+uuid)
-    let content = this.http.get<Object>(url+uuid+"/content")
-    return forkJoin([meta, content]).pipe(map(note => ({meta: note[0], content: note[1]})))
+    let content = this.http.get<string>(url+uuid+"/content").pipe(map(c => JSON.parse(c)))
+    return forkJoin([meta, content]).pipe(map(note => { console.log(note[1]); return ({meta: note[0], content: note[1]}) }))
   }
 
   saveNote(note: Note): Promise<NoteMetadata> {
