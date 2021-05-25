@@ -41,7 +41,6 @@ import { AuthInterceptor } from './interceptors/AuthInterceptor';
     BrowserComponent,
     NoteEditorComponent,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
-    NgZorroAntdModule,
     NzTabsModule,
   ],
   providers: [
