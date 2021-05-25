@@ -9,6 +9,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { NgZorroAntdModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/AuthInterceptor';
 
 @NgModule({
   declarations: [
@@ -41,6 +43,13 @@ import { NzTabsModule } from "ng-zorro-antd/tabs";
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
     NgZorroAntdModule,
     NzTabsModule,
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor ,
+      multi: true
+    }
   ]
 })
 export class SharedModule {}

@@ -55,15 +55,16 @@ export class TabsManagerService implements OnInit {
   /**
    * Opens a new tab
    * @param uuid Note uuid
+   * @param storage l'espace de stockage
    */
-  public open(uuid: string) {
+  public open(uuid: string, storage: StorageMode) {
     const alreadyOpenedTab: NoteTab | undefined = this._openedNotes.getValue().find(t=>t.savedNote.meta.uuid === uuid)
     // Si la note est déjà ouverte, on émet un évènement
     if (alreadyOpenedTab) {
       this._alreadyOpened.next(alreadyOpenedTab)
       return
     }
-    this._ioS.getNote(StorageMode.Local, uuid).toPromise().then(n=>this.append(n))
+    this._ioS.getNote(storage, uuid).toPromise().then(n=>this.append(n))
   }
 
   /**

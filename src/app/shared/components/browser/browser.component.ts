@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, OnDestroy, ViewChild } from '@angular/core';
 import { IoService, BrowserService, AuthService } from '../../../services';
-import { Subscription, Observable, timer, Subject, merge, of } from 'rxjs';
+import { Subscription, Observable, Subject, of, combineLatest } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
@@ -21,7 +21,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
   @ViewChild('notemenu') noteMenu: NzDropdownMenuComponent;
   @ViewChild('rootmenu') rootMenu: NzDropdownMenuComponent;
   @ViewChild('nzTree') nzTree: NzTreeComponent;
-  
+
   /**
    * Noeuds de l'arbre de navigation lors de sa création
    */
@@ -34,12 +34,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   hasSessionCookie: boolean = false;
 
+
   constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
     private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService) { }
 
   // Source is local files by default but can be overriden by
   // Setting (source) as input
-   _source: StorageMode = StorageMode.Local
+  _source: StorageMode = StorageMode.Local
   // Catch source input change
   @Input() set source(s: StorageMode) {
     this._source = s
@@ -50,11 +51,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * Stores fetched notes metadata
    */
   _notes: NoteMetadata[] = []
+  _cloudNotes: NoteMetadata[] = [];
 
   /**
    * Stores fetched folders
    */
-  _folders: Folder[] = []
+  _localFolders: Folder[] = []
+  _cloudFolders: Folder[] = []
 
   searchValue: string
 
@@ -67,38 +70,64 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Automatically fetch noteList with debounce to prevent generateTree overcalls
-    this.subscribtions.push(this._ioS.getListNotes(this._source).subscribe(metas => {
+    this.subscribtions.push(this._ioS.getListNotes(StorageMode.Local).subscribe(metas => {
       this._notes = metas
+    }))
+    this.subscribtions.push(this._ioS.getListNotes(StorageMode.Cloud).subscribe(metas => {
+      this._cloudNotes = metas
     }))
     this.updateNoteList()
     // Automatically fetch folder list
-    this.subscribtions.push(this._ioS.getListFolders(this._source).subscribe(folders => {
+    this.subscribtions.push(this._ioS.getListFolders(StorageMode.Local).subscribe(folders => {
       console.debug('nouveaux dossiers : ', folders)
-      this._folders = folders
+      this._localFolders = folders
+    }))
+    this.subscribtions.push(this._ioS.getListFolders(StorageMode.Cloud).subscribe(folders => {
+      console.debug('nouveaux dossiers : ', folders)
+      this._cloudFolders = folders
     }))
     // Folder and note merge
     this.subscribtions.push(
-      merge(this._ioS.getListFolders(this._source), this._ioS.getListNotes(this._source))
+      combineLatest([this._ioS.getListFolders(StorageMode.Local), this._ioS.getListNotes(StorageMode.Local),
+                     this._ioS.getListFolders(StorageMode.Cloud), this._ioS.getListNotes(StorageMode.Cloud)])
         .pipe(debounceTime(100))
-        .subscribe(()=> {
+        .subscribe(() => {
           this.generateTree()
         })
     )
-    this._ioS.refreshListFolders(this._source)
+    this._ioS.refreshListFolders(StorageMode.Local)
+    this._ioS.refreshListFolders(StorageMode.Cloud)
+
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
       console.debug("selecting " + uuid)
       this.setSelectedNode(uuid)
     }))
     // Handle browser service/api requests
-    this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe(()=>{
+    this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe(() => {
       this.newFolder(true)
     }))
-    this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe(()=>{
+    this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe(() => {
       this.createNote()
     }))
     // Update auth state automatically
     this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
+  }
+
+  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]) {
+    folders.forEach((f, index) => {
+      if (!f.parentFolder || f.parentFolder == "") {
+        // Création et insertion du noeud
+        let noRootNode = TreeTools.createFolderNode(f)
+        // Si le noeud était ouvert, on le réouvre
+        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
+        noRootNode.storage = root.storage
+        root.children.push(noRootNode)
+        // Insertion de ses enfants
+        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
+        TreeTools.insertChildren(noRootNode, f, folders, notes, openedFoldersId)
+      }
+    })
   }
 
   /**
@@ -109,40 +138,41 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Mémoriser quels dossiers étaient ouverts
     let openedFoldersId: string[] = []
     if (this.nzTree) {
-      openedFoldersId = this.nzTree.getExpandedNodeList().map(node=>node.key)
+      openedFoldersId = this.nzTree.getExpandedNodeList().map(node => node.key)
     }
     // Création d'un noeud racine
-    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root");
-    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root");
+    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
+    let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);
+
     // Nettoyer l'arbre
     this.nodes = [localRoot, cloudRoot]
     // Pour chaque élément sans racine
-    let folders: Folder[] = [...this._folders] // copie des dossiers
-    folders.forEach((f,index)=>{
-      if (!f.parentFolder || f.parentFolder == "") {
-        // Création et insertion du noeud
-        let noRootNode = TreeTools.createFolderNode(f)
-        // Si le noeud était ouvert, on le réouvre
-        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
-        localRoot.children.push(noRootNode)
-        // Insertion de ses enfants
-        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, folders, this._notes, openedFoldersId)
-      }
-    })
+    let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
+    let cloudFolders: Folder[] = [{
+      uuid: "cloud",
+      title: "Mes Documents Cloud",
+      color: "#FFFFFF",
+      description: "",
+      noteUUIDs: this._cloudNotes.map(note => note.uuid),
+      parentFolder: null,
+      data: {}
+    }]
+    this.placeInTree(localFolders, localRoot, openedFoldersId, this._notes)
+    this.placeInTree(cloudFolders, cloudRoot, openedFoldersId, this._cloudNotes)
     console.debug("Fin de la génération de l'arbre")
     this.treeGeneratedSubject.next()
   }
-  
+
   ngOnDestroy() {
-    this.subscribtions.forEach(s=>s.unsubscribe())
+    this.subscribtions.forEach(s => s.unsubscribe())
   }
-  
+
   /**
    * Calls the IoService to re-fetch notes metadatas from source
    */
   public updateNoteList() {
-    this._ioS.refreshListNotes(this._source)
+    this._ioS.refreshListNotes(StorageMode.Local)
+    this._ioS.refreshListNotes(StorageMode.Cloud)
   }
 
   /**
@@ -159,8 +189,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
       }
     }
   }
-
-
 
   /**
    * Set a node selected
@@ -188,61 +216,81 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
-/***************************************************************************************************
- *                                              NOTES                                              *
- ***************************************************************************************************/
+  /***************************************************************************************************
+   *                                              NOTES                                              *
+   ***************************************************************************************************/
 
   /**
-   * Returns the selected folder, undefined otherwise
+   * Returns the selected note, undefined otherwise
    */
   getSelectedNote(): NoteMetadata {
-    return this._notes.find(n=>n.uuid==this.selectedNode.key)
+    return this._notes.find(n => n.uuid == this.selectedNode.key) || this._cloudNotes.find(n => n.uuid == this.selectedNode.key)
   }
 
   /**
    * Calls tabsManagerService to open a note
    * @param uuid Note uuid
    */
-  openNote(uuid: string) {
-    this._tmS.open(uuid);
+  openNote(uuid: string, storage: StorageMode) {
+    this._tmS.open(uuid, storage);
   }
 
+  async getStorageMode(node) { }
+
+
+
   async createNote() {
-    let f = this.getSelectedFolder()
-    if (!f) {
-      // Si pas de dossier sélectionné, on en crée un
-      f = await this.newFolder(true)
-    } else {
-      // Si le dossier sélectionné est fermé, on l'ouvre
-      this.selectedNode.isExpanded = true
+    console.log(this.selectedNode.origin.storage)
+    var f = this.getSelectedFolder()
+    switch (this.selectedNode.origin.storage) {
+      case StorageMode.Local:
+        if (!f) {
+          // Si pas de dossier sélectionné, on en crée un
+          f = await this.newFolder(true)
+        } else {
+          // Si le dossier sélectionné est fermé, on l'ouvre
+          this.selectedNode.isExpanded = true
+        }
+        let newNote: NoteMetadata = await this._ioS.createNote(StorageMode.Local)
+        console.log("new", newNote);
+        f.noteUUIDs.push(newNote.uuid)
+        this._ioS.updateFolder(StorageMode.Local, f)
+        this._ioS.saveListFolders(StorageMode.Local)
+        // On attend que la liste des notes soit mise à jour pour
+        // sélectionner le nouveau noeud
+        this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
+          setImmediate(() => {
+            this.setSelectedNode(newNote.uuid)
+            this._tmS.open(newNote.uuid, StorageMode.Local)
+          })
+        })
+      case StorageMode.Cloud:
+        let newNoteCloud: NoteMetadata = await this._ioS.createNote(StorageMode.Cloud)
+        console.log("new", newNoteCloud);
+        this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
+          setImmediate(() => {
+            this.setSelectedNode(newNoteCloud.uuid)
+            this._tmS.open(newNoteCloud.uuid, StorageMode.Cloud)
+          })
+        })
     }
-    let newNote: NoteMetadata = await this._ioS.createNote(StorageMode.Local)
-    console.log("new", newNote);
-    f.noteUUIDs.push(newNote.uuid)
-    this._ioS.updateFolder(StorageMode.Local, f)
-    this._ioS.saveListFolders(StorageMode.Local)
-    // On attend que la liste des notes soit mise à jour pour
-    // sélectionner le nouveau noeud
-    this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
-      setImmediate(() => {
-        this.setSelectedNode(newNote.uuid)
-        this._tmS.open(newNote.uuid)
-      })
-    })
+
   }
 
   removeNote() {
     const note: NoteMetadata = this.getSelectedNote()
+
     this._modalService.confirm({
       nzTitle: `Êtes-vous sur de vouloir supprimer <b>${note.title}</b> ?`,
       nzContent: '',
       nzOkText: 'Oui',
       nzOkType: 'danger',
       nzOnOk: () => {
-        this._ioS.removeNote(StorageMode.Local, note)
+            this._ioS.removeNote(this.selectedNode.parentNode.origin.storage, note)
       },
       nzCancelText: 'Annuler'
     })
+
   }
 
 
@@ -261,7 +309,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         }
       ]
     })
-    modal.afterClose.subscribe( (result: NoteMetadata) => {
+    modal.afterClose.subscribe((result: NoteMetadata) => {
       if (result) {
         // Updating folder data
         this._ioS.saveMetadata(StorageMode.Local, result)
@@ -270,15 +318,15 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
 
-/***************************************************************************************************
- *                                         NODE SELECTION                                          *
- ***************************************************************************************************/
+  /***************************************************************************************************
+   *                                         NODE SELECTION                                          *
+   ***************************************************************************************************/
 
   /**
    * Returns the selected folder, undefined otherwise
    */
   getSelectedFolder(): Folder {
-    return this.selectedNode && this._folders.find(f=>f.uuid==this.selectedNode.key)
+    return this.selectedNode && this._localFolders.find(f => f.uuid == this.selectedNode.key)
   }
 
   /**
@@ -290,10 +338,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.selectedNode = this.nzTree?.getTreeNodeByKey(key)
   }
 
-    /**
-   * Triggered when user left-clicks on a tree node
-   * @param data Tree Node event emitter
-   */
+  /**
+ * Triggered when user left-clicks on a tree node
+ * @param data Tree Node event emitter
+ */
   activateNode(data: NzFormatEmitEvent): void {
     // Close contextual menu
     this._nzContextMenuService.close()
@@ -304,29 +352,29 @@ export class BrowserComponent implements OnInit, OnDestroy {
       this.openFolder(data.node)
     } else {
       // Si il s'agit d'une note ou l'ouvre
-      this.openNote(data.node.key)
+      this.openNote(data.node.key, data.node.parentNode.origin.storage)
     }
   }
 
 
-/***************************************************************************************************
- *                                       FOLDER MODIFICATION                                       *
- ***************************************************************************************************/
+  /***************************************************************************************************
+   *                                       FOLDER MODIFICATION                                       *
+   ***************************************************************************************************/
 
   /**
    * Crée un dossier avec pour parent le dossier sélectionné
    * @param atRoot Le dossier crée est il dans un noeud racine
    */
-  async newFolder(atRoot: boolean = false): Promise<Folder> {    
+  async newFolder(atRoot: boolean = false): Promise<Folder> {
     // Si le dossier sélectionné est fermé, on l'ouvre
     if (this.selectedNode) this.selectedNode.isExpanded = true
-    let newFolder = await this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot? undefined : this.selectedNode.key)
+    let newFolder = await this._ioS.createFolder(StorageMode.Local, "Nouveau dossier", atRoot ? undefined : this.selectedNode.key)
     // Sauvegarde des changements
     this._ioS.saveListFolders(StorageMode.Local)
     // On attend que la liste des dossiers soit mise à jour pour
     // sélectionner le nouveau noeud
-    this.treeGeneratedSubject.pipe(take(1)).subscribe(()=>{
-      setImmediate(()=>{
+    this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
+      setImmediate(() => {
         this.setSelectedNode(newFolder.uuid)
         this.selectedNode.isExpanded = true
       })
@@ -349,7 +397,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         // ATTENTION : On doit passer en paramètre une copie de this._notes et this._folders
         // car durant la suppression récursive, des éléments vont être supprimés de ces arrays
         // et removeFolderRecursive prend en paramètre des tableaux constants.
-        this._ioS.removeFolderRecursive(StorageMode.Local, f, [...this._notes], [...this._folders])
+        this._ioS.removeFolderRecursive(StorageMode.Local, f, [...this._notes], [...this._localFolders])
         // Saving changes
         this._ioS.saveListFolders(StorageMode.Local)
       },
@@ -375,7 +423,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         }
       ]
     })
-    modal.afterClose.subscribe( (result: Folder) => {
+    modal.afterClose.subscribe((result: Folder) => {
       if (result) {
         // Updating folder data
         this._ioS.updateFolder(StorageMode.Local, result)
@@ -386,17 +434,17 @@ export class BrowserComponent implements OnInit, OnDestroy {
   }
 
 
-/***************************************************************************************************
- *                                           DRAG N DROP                                           *
- ***************************************************************************************************/
+  /***************************************************************************************************
+   *                                           DRAG N DROP                                           *
+   ***************************************************************************************************/
 
   nzEvent(event: NzFormatEmitEvent): void {
     if (event.eventName == "drop") {
       console.debug(event)
       if (event.dragNode.origin.isFolder) {
 
-        let f: Folder = this._folders.find(f=>f.uuid == event.dragNode.key)
-        let newParent: Folder = this._folders.find(f=>f.uuid == event.node.key)
+        let f: Folder = this._localFolders.find(f => f.uuid == event.dragNode.key)
+        let newParent: Folder = this._localFolders.find(f => f.uuid == event.node.key)
         // Set new parent if it exists, else set parent to root
         f.parentFolder = newParent ? newParent.uuid : ''
         // Save changes
@@ -406,13 +454,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
       } else {
         console.debug(event.dragNode.parentNode)
         // Remove note from parentFolder
-        let parentFolderSource: Folder = this._folders.find(f=>f.noteUUIDs.includes(event.dragNode.key))
-        let destinationFolder: Folder = this._folders.find(f=>f.uuid == event.dragNode.parentNode.key)
+        let parentFolderSource: Folder = this._localFolders.find(f => f.noteUUIDs.includes(event.dragNode.key))
+        let destinationFolder: Folder = this._localFolders.find(f => f.uuid == event.dragNode.parentNode.key)
         console.debug(parentFolderSource, destinationFolder)
         if (destinationFolder) {
           // Remove note UUID from original parent
           console.debug("original parent", parentFolderSource)
-          parentFolderSource.noteUUIDs = parentFolderSource.noteUUIDs.filter(uuid=>uuid!=event.dragNode.key)
+          parentFolderSource.noteUUIDs = parentFolderSource.noteUUIDs.filter(uuid => uuid != event.dragNode.key)
           // Add note UUID to new parent
           destinationFolder.noteUUIDs.push(event.dragNode.key)
           console.debug("new original parent", parentFolderSource)
@@ -420,7 +468,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
           this._ioS.updateFolder(StorageMode.Local, parentFolderSource)
           this._ioS.updateFolder(StorageMode.Local, destinationFolder)
           this._ioS.saveListFolders(StorageMode.Local)
-        } 
+        }
 
       }
       // DragnDrop is bugged in NzTree when inserting between two notes, need to refresh

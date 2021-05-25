@@ -1,11 +1,12 @@
 import { Folder } from "../../../types/Folder"
 import { NzTreeNodeOptions } from "ng-zorro-antd"
 import { NoteMetadata } from "../../../types/NoteMetadata"
+import { StorageMode } from "../../../services/io/StorageMode"
 
 export class TreeTools {
 
   /** Crée un noeud de dossier vide */
-  static createCustomFolder(title: string, key: string): NzTreeNodeOptions {
+  static createCustomFolder(title: string, key: string, storage: StorageMode): NzTreeNodeOptions {
     return {
       title: title,
       key: key,
@@ -14,7 +15,8 @@ export class TreeTools {
       isFolder: true,
       expanded: true,
       isRoot: true,
-      selectable: false
+      selectable: false,
+      storage: storage
     }
   }
 
@@ -26,7 +28,8 @@ export class TreeTools {
       children: [],
       isLeaf: false,
       isFolder: true,
-      isRoot: false
+      isRoot: false,
+      storage: undefined
     }
   }
 
@@ -38,6 +41,7 @@ export class TreeTools {
       isLeaf: true,
       isFolder: false,
       isRoot: false,
+      storage: undefined
     }
   }
 
@@ -53,6 +57,7 @@ export class TreeTools {
       if (f.parentFolder != undefined && f.parentFolder == parent.uuid) {
         // Création et insertion du noeud
         let newNode = TreeTools.createFolderNode(f)
+        newNode.storage = node.storage
         newNode.expanded = expandedNodelist.includes(newNode.key)
         node.children.push(newNode)
         // Insertion de ses enfants
