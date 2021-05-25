@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { Observable, BehaviorSubject, from, forkJoin } from 'rxjs';
 import { INoteDriver } from '../INoteDriver';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { JsonConverter } from 'json2typescript';
 
-let url = "http://127.0.0.1:4455/mynotes/notes/"
+let url = isDevMode() ? "http://127.0.0.1:4455/mynotes/notes/"
+                      : "https://cloud.noxunote.fr/mynotes/notes/"
 
 @Injectable({
   providedIn: 'root'

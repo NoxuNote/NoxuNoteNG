@@ -235,12 +235,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._tmS.open(uuid, storage);
   }
 
-  async getStorageMode(node) { }
-
-
-
   async createNote() {
-    console.log(this.selectedNode.origin.storage)
     var f = this.getSelectedFolder()
     switch (this.selectedNode.origin.storage) {
       case StorageMode.Local:
@@ -310,9 +305,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
       ]
     })
     modal.afterClose.subscribe((result: NoteMetadata) => {
+      //console.log(this.selectedNode.origin.storage)
       if (result) {
         // Updating folder data
-        this._ioS.saveMetadata(StorageMode.Local, result)
+        this._ioS.saveMetadata(StorageMode.Cloud, result).then( () => this._ioS.refreshListNotes(StorageMode.Cloud))
       }
     })
   }
