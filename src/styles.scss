@@ -1,30 +1,30 @@
+$left-menu-background: #f0f0f0;
+
 /* You can add global styles to this file, and also import other style files */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: sans-serif;
 }
 
-:root {
-  --note-background: #ffffff;
-  --left-menu-background: #f0f0f0;
-}
 app-math-input {
   position: absolute;
   z-index: 2;
   display: none;
 }
 app-math-input.math-input-shown {
-  display: block!important;
+  display: block !important;
   transition: all 0.2s ease-out;
 }
 
 .rawFormula {
   display: none;
-} 
-.outputFormula, mjx-container[jax="CHTML"][display="true"] {
-  display: inline!important;
-  margin: 1em 0!important;
+}
+.outputFormula,
+mjx-container[jax="CHTML"][display="true"] {
+  display: inline !important;
+  margin: 1em 0 !important;
   font-size: 1.1em;
 }

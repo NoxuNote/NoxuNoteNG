@@ -14,13 +14,19 @@ import { AppRoutingModule } from './app-routing.module';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
-import { HomeModule } from './home/home.module';
+// Ng Zorro translate
+import { NZ_I18N, fr_FR } from 'ng-zorro-antd/i18n';
 
+import { HomeModule } from './home/home.module';
 import { AppComponent } from './app.component';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppConfig } from '../environments/environment';
+import { registerLocaleData } from '@angular/common';
+import fr from '@angular/common/locales/fr';
+
+registerLocaleData(fr);
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
@@ -47,7 +53,7 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
     }),
     ServiceWorkerModule.register('ngsw-worker.js', { enabled: AppConfig.production })
   ],
-  providers: [],
+  providers: [{ provide: NZ_I18N, useValue: fr_FR }],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

@@ -36,8 +36,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss",
-              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
+              "src/theme.less",
+              "src/styles.scss"
             ],
             "customWebpackConfig": {
               "path": "./angular.webpack.js"
