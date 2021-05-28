@@ -102,6 +102,6 @@
     "fs-extra": "8.1.0",
     "json2typescript": "1.2.3",
     "ng-zorro-antd": "^11.4.1",
-    "tslib": "^2.0.0"
+    "tslib": "2.2.0"
   }
 }

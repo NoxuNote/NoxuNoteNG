@@ -9,7 +9,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
-import { NzContextMenuService } from 'ng-zorro-antd';
+import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
 
 @Component({
   selector: 'app-note-editor',

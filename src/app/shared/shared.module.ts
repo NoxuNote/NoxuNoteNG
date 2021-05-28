@@ -7,8 +7,14 @@ import { PageNotFoundComponent, PlatformComponent, BrowserComponent, NoteEditorC
 import { WebviewDirective } from './directives/';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { NgZorroAntdModule, NzDropDownModule, NzFormModule, NzIconModule, NzInputModule, NzModalModule, NzTreeModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
+import { NzDropDownModule } from 'ng-zorro-antd/dropdown';
+import { NzTreeModule } from 'ng-zorro-antd/tree';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/AuthInterceptor';
 

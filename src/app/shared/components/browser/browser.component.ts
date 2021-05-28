@@ -4,12 +4,14 @@ import { Subscription, Observable, Subject, of, combineLatest } from 'rxjs';
 import { StorageMode } from '../../../services/io/StorageMode';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { TabsManagerService } from '../../../services/tabsManager/tabs-manager.service';
-import { NzFormatEmitEvent, NzTreeNode, NzTreeNodeOptions, NzDropdownMenuComponent, NzContextMenuService, NzTreeComponent, NzModalService, NzFormatBeforeDropEvent } from 'ng-zorro-antd';
 import { Folder } from '../../../types/Folder';
 import { debounceTime, take } from 'rxjs/operators';
 import { TreeTools } from './TreeTools';
 import { CustomizeFolderComponent } from '../customize-folder/customize-folder.component';
 import { CustomizeNoteComponent } from '../customize-note/customize-note.component';
+import { NzDropdownMenuComponent, NzContextMenuService } from 'ng-zorro-antd/dropdown';
+import { NzModalService } from 'ng-zorro-antd/modal';
+import { NzTreeComponent, NzTreeNodeOptions, NzTreeNode, NzFormatEmitEvent, NzFormatBeforeDropEvent } from 'ng-zorro-antd/tree';
 
 @Component({
   selector: 'app-browser',

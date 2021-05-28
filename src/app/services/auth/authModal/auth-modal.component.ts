@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { NzModalRef } from 'ng-zorro-antd';
 import {DomSanitizer,SafeResourceUrl,} from '@angular/platform-browser';
+import { NzModalRef } from 'ng-zorro-antd/modal';
 import { isInDevMode } from '../../../app.constants';
 
 
