@@ -7,7 +7,7 @@ import { PageNotFoundComponent, PlatformComponent, BrowserComponent, NoteEditorC
 import { WebviewDirective } from './directives/';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { NgZorroAntdModule } from "ng-zorro-antd";
+import { NgZorroAntdModule, NzDropDownModule, NzFormModule, NzIconModule, NzInputModule, NzModalModule, NzTreeModule } from "ng-zorro-antd";
 import { NzTabsModule } from "ng-zorro-antd/tabs";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/AuthInterceptor';
@@ -29,8 +29,13 @@ import { AuthInterceptor } from './interceptors/AuthInterceptor';
     FormsModule,
     ReactiveFormsModule,
     /** import ng-zorro-antd root module，you should import NgZorroAntdModule and avoid importing sub modules directly **/
-    NgZorroAntdModule,
     NzTabsModule,
+    NzDropDownModule,
+    NzTreeModule,
+    NzInputModule,
+    NzFormModule,
+    NzModalModule,
+    NzIconModule
   ],
   exports: [
     TranslateModule,
