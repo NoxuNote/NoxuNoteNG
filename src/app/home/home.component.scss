@@ -1,11 +1,13 @@
+@import "../../styles.scss";
+
 .container {
   .left {
     position: fixed;
     width: 300px;
     height: 100vh;
     padding: 20px;
-    background-color: var(--left-menu-background);
-  } 
+    background-color: $left-menu-background;
+  }
   .right {
     margin-left: 300px;
     height: 100vh;

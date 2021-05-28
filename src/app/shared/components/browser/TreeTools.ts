@@ -1,7 +1,7 @@
 import { Folder } from "../../../types/Folder"
-import { NzTreeNodeOptions } from "ng-zorro-antd"
 import { NoteMetadata } from "../../../types/NoteMetadata"
 import { StorageMode } from "../../../services/io/StorageMode"
+import { NzTreeNodeOptions } from "ng-zorro-antd/tree"
 
 export class TreeTools {
 

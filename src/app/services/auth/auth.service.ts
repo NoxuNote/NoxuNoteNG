@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { getCookie } from './cookies'
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
-import { NzModalService } from 'ng-zorro-antd';
 import { AuthModalComponent } from './authModal/auth-modal.component';
+import { NzModalService } from 'ng-zorro-antd/modal';
 
 @Injectable({
   providedIn: 'root'

@@ -1,5 +1,4 @@
 <div>
-  Mode : <b>{{_source==0 ? 'Desktop' : 'Web'}}</b>&nbsp;
   <nz-input-group [nzSuffix]="suffixIcon">
     <input type="text" nz-input placeholder="Search" [(ngModel)]="searchValue" />
   </nz-input-group>
@@ -11,6 +10,7 @@
     nzNoAnimation
     [nzData]="nodes" 
     [nzSearchValue]="searchValue"
+    [nzSelectedKeys]="selectedNode ? [selectedNode.key] : []"
     nzDraggable
     (nzClick)="activateNode($event)"
     (nzContextMenu)="selectNode($event)"
@@ -19,11 +19,10 @@
     [nzBeforeDrop]="beforeDrop">
   </nz-tree>
   <ng-template #nzTreeTemplate let-node>
-    <span class="custom-node" 
+    <span 
         [attr.draggable]="node.origin.isRoot?null:true"
         [attr.aria-grabbed]="node.origin.isRoot?null:true"
         [class.draggable]="node.origin.isRoot?null:true"
-        [class.active]="selectedNode?.key === node.key"
         [class.root]="node.origin.isRoot"
         [class.folder]="node.origin.isFolder"
         (contextmenu)="contextMenu($event, node)">
@@ -33,11 +32,11 @@
       </span>
       <ng-template #notRoot>
         <span *ngIf="node.origin.isFolder">
-          <i nz-icon nzTheme="fill" [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
+          <i nz-icon nzTheme="twotone" [nzType]="node.isExpanded ? 'folder-open' : 'folder'"></i>
           <span class="folder-name">{{ node.title }}</span>
         </span>
         <span *ngIf="!node.origin.isFolder">
-          <i nz-icon nzType="file"></i>
+          <i nz-icon nzTheme="twotone" nzType="file"></i>
           <span class="file-name">{{ node.title }}</span>
         </span>
       </ng-template>
@@ -47,16 +46,16 @@
   <nz-dropdown-menu #foldermenu="nzDropdownMenu">
     <ul nz-menu>
       <li nz-menu-item (click)="createNote()">
-        <i nz-icon nzType="file-add"></i> Nouvelle note
+        <i nz-icon nzType="file-add" nzTheme="twotone"></i> Nouvelle note
       </li>
       <li nz-menu-item (click)="newFolder()">
-        <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
+        <i nz-icon nzType="folder-add" nzTheme="twotone"></i> Nouveau dossier
       </li>
       <li nz-menu-item (click)="editFolder()">
-        <i nz-icon nzType="edit"></i> Renommer / Modifier
+        <i nz-icon nzType="edit" nzTheme="twotone"></i> Renommer / Modifier
       </li>
       <li nz-menu-item (click)="removeFolder()" class="delete">
-        <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
+        <i nz-icon nzType="delete" nzTheme="twotone"></i> Supprimer
       </li>
     </ul>
   </nz-dropdown-menu>
@@ -64,10 +63,10 @@
   <nz-dropdown-menu #notemenu="nzDropdownMenu">
     <ul nz-menu>
       <li nz-menu-item (click)="editNote()">
-        <i nz-icon nzType="edit"></i> Renommer / Modifier
+        <i nz-icon nzType="edit" nzTheme="twotone"></i> Renommer / Modifier
       </li>
       <li nz-menu-item class="delete" (click)="removeNote()">
-        <i class="delete" nzTheme="fill" nz-icon nzType="delete"></i> Supprimer
+        <i nz-icon nzType="delete" nzTheme="twotone"></i> Supprimer
       </li>
     </ul>
   </nz-dropdown-menu>
@@ -75,10 +74,10 @@
   <nz-dropdown-menu #rootmenu="nzDropdownMenu">
     <ul nz-menu>
       <li nz-menu-item (click)="updateNoteList()">
-        <i nz-icon nzType="reload"></i> Rafraîchir
+        <i nz-icon nzType="reload" nzTheme="outline"></i> Rafraîchir
       </li>
       <li nz-menu-item (click)="newFolder(true)">
-        <i nz-icon nzTheme="fill" nzType="folder-add"></i> Nouveau dossier
+        <i nz-icon nzType="folder" nzTheme="twotone"></i> Nouveau dossier
       </li>
     </ul>
   </nz-dropdown-menu>
