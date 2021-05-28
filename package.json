@@ -1,5 +1,5 @@
 {
-  "name": "NoxuNote",
+  "name": "noxunote",
   "version": "2.0.0-alpha",
   "description": "",
   "homepage": "https://noxunote.fr",
@@ -35,7 +35,8 @@
     "mockfiles": "node mockFiles/copyMockFiles.js",
     "copyHeaderJs": "cp ../header/dist/header.js src/app/shared/components/note-editor/customTools/header.js",
     "copyParagraphJs": "cp ../paragraph/dist/paragraph.js src/app/shared/components/note-editor/customTools/paragraph.js",
-    "analyzeBundle": "npx ng build --prod --sourceMap=true && npx source-map-explorer dist/*.js"
+    "analyzeBundle": "npx ng build --prod --sourceMap=true && npx source-map-explorer dist/*.js",
+    "deploy": "npx ng build --prod && zip dist.zip -r dist && ssh leo@noxunote.fr 'cd /var/www/app && rm -rf * && rm -f *' && scp dist.zip leo@noxunote.fr:/var/www/app && ssh leo@noxunote.fr 'cd /var/www/app && unzip dist.zip && mv dist/* .'"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^8.4.1",
