@@ -1,4 +1,5 @@
+import { AppConfig } from "../environments/environment";
 
 export function isInDevMode():boolean {
-    return true
+    return !AppConfig.production
 }
