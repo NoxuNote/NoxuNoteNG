@@ -44,7 +44,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     private _modalService: NzModalService, 
     private _browserService: BrowserService, 
     private _authService: AuthService,
-    private _electronService: ElectronService) { }
+    public _electronService: ElectronService) { }
 
 
   /**
