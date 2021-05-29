@@ -47,7 +47,7 @@ export class NoteTabsComponent implements OnInit, OnDestroy {
     // this.cd.detectChanges() 
   }
   tabChange($event) {
-    this._tmS.informTabChange(this.tabs[$event.index].savedNote.meta.uuid);
+    this._tmS.informTabChange(this.tabs[$event.index]?.savedNote.meta.uuid);
   }
 
   askCreateFolder() {
