@@ -1,8 +1,8 @@
-<div class="container">
-  <div class="left">
+<nz-layout class="layout">
+  <nz-sider [nzWidth]="280"  nzCollapsible nzBreakpoint="lg" [nzCollapsedWidth]="0">
     <app-leftmenu></app-leftmenu>
-  </div>
-  <div class="right">
+  </nz-sider>
+  <nz-layout class="content">
     <app-note-tabs></app-note-tabs>
-  </div>
-</div>
+  </nz-layout>
+</nz-layout>

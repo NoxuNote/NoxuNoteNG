@@ -1,16 +1,13 @@
 @import "../../styles.scss";
 
-.container {
-  .left {
-    position: fixed;
-    width: 300px;
-    height: 100vh;
-    padding: 20px;
-    background-color: $left-menu-background;
-  }
-  .right {
-    margin-left: 300px;
-    height: 100vh;
-    padding: 0;
-  }
+nz-sider {
+  // overflow-y: auto;
+  height: 100vh;
+  padding: 15px;
+}
+
+.content {
+  background-color: white;
+  height: 100vh;
+  overflow: scroll;
 }
