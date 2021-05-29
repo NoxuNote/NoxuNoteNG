@@ -38,8 +38,8 @@ export class IoService {
         return this._cloudNoteDriverService.getListNotes()
     }
   }
-  public saveNote(source: StorageMode, note: Note): Promise<NoteMetadata> {
-    switch (source) {
+  public saveNote(note: Note): Promise<NoteMetadata> {
+    switch (note.storageMode) {
       case StorageMode.Local:
         return this._localNoteDriverService.saveNote(note)
       case StorageMode.Cloud:

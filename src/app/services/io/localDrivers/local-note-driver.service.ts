@@ -7,6 +7,7 @@ import { Note } from '../../../types/Note';
 import { PathsService } from './paths/paths.service';
 import { JsonConvert, ValueCheckingMode } from "json2typescript";
 import { v4 as uuidv4 } from 'uuid';
+import { StorageMode } from '../StorageMode';
 
 @Injectable({
   providedIn: 'root'
@@ -61,7 +62,11 @@ export class LocalNoteDriverService implements INoteDriver {
       this.getMetaFromJson(this.getMetaPath(uuid)),
       this._elS.fs.readJson(this.getNotePath(uuid))
     ])
-    return from(unionPromise.then( (c:[NoteMetadata, string]) => ( {meta: c[0], content: c[1]} as Note )))
+    return from(unionPromise.then( (c:[NoteMetadata, string]) => ({
+      meta: c[0], 
+      content: c[1],
+      storageMode: StorageMode.Local
+    } as Note )))
   }
   
   async saveNote(note: Note): Promise<NoteMetadata> {
@@ -94,7 +99,8 @@ export class LocalNoteDriverService implements INoteDriver {
     })
     let note: Note = {
       meta: meta,
-      content: {}
+      content: {},
+      storageMode: StorageMode.Local
     }
     // Writing note on disk
     await this.saveNote(note)

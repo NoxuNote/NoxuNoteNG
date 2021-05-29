@@ -1,3 +1,4 @@
+import { StorageMode } from "../services";
 import { NoteMetadata } from "./NoteMetadata";
 
 export type Note = {
@@ -8,5 +9,9 @@ export type Note = {
   /**
    * Note metadata
    */
-  meta: NoteMetadata,       
+  meta: NoteMetadata,    
+  /**
+   * Where is the note stored
+   */
+  storageMode: StorageMode   
 }

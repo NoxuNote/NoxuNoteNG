@@ -179,7 +179,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.note.meta.title})`);
     let outputData = await this.editor.save()
-    await this._ioS.saveNote(StorageMode.Cloud, { meta: this.note.meta, content: outputData } as Note) //Triche démo storag mode non dynamique
+    await this._ioS.saveNote({ ...this.note, content: outputData })
     console.debug(`[AUTOMATIC SAVE] done. (${this.note.meta.title})`)
     this.changesAreSaved = true
   }

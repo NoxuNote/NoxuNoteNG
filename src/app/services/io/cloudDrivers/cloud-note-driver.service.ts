@@ -6,6 +6,7 @@ import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { isInDevMode } from '../../../app.constants';
+import { StorageMode } from '../StorageMode';
 
 let url = isInDevMode() ? "http://127.0.0.1:4455/mynotes/notes/"
                       : "https://cloud.noxunote.fr/mynotes/notes/"
@@ -38,7 +39,12 @@ export class CloudNoteDriverService implements INoteDriver {
   getNote(uuid: string): Observable<Note> {
     let meta = this.http.get<NoteMetadata>(url+uuid)
     let content = this.http.get<string>(url+uuid+"/content").pipe(map(c => JSON.parse(c)))
-    return forkJoin([meta, content]).pipe(map(note => { console.log(note[1]); return ({meta: note[0], content: note[1]}) }))
+    return forkJoin([meta, content]).pipe(map(note => ({
+        meta: note[0], 
+        content: note[1],
+        storageMode: StorageMode.Cloud
+      }) 
+    ))
   }
 
   saveNote(note: Note): Promise<NoteMetadata> {
