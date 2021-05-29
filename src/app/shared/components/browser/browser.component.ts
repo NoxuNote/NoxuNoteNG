@@ -12,6 +12,7 @@ import { CustomizeNoteComponent } from '../customize-note/customize-note.compone
 import { NzDropdownMenuComponent, NzContextMenuService } from 'ng-zorro-antd/dropdown';
 import { NzModalService } from 'ng-zorro-antd/modal';
 import { NzTreeComponent, NzTreeNodeOptions, NzTreeNode, NzFormatEmitEvent, NzFormatBeforeDropEvent } from 'ng-zorro-antd/tree';
+import { ElectronService } from '../../../core/services';
 
 @Component({
   selector: 'app-browser',
@@ -37,8 +38,13 @@ export class BrowserComponent implements OnInit, OnDestroy {
   hasSessionCookie: boolean = false;
 
 
-  constructor(private _ioS: IoService, private _tmS: TabsManagerService, private _nzContextMenuService: NzContextMenuService,
-    private _modalService: NzModalService, private _browserService: BrowserService, private _authService: AuthService) { }
+  constructor(private _ioS: IoService, 
+    private _tmS: TabsManagerService, 
+    private _nzContextMenuService: NzContextMenuService,
+    private _modalService: NzModalService, 
+    private _browserService: BrowserService, 
+    private _authService: AuthService,
+    private _electronService: ElectronService) { }
 
 
   /**
@@ -135,13 +141,21 @@ export class BrowserComponent implements OnInit, OnDestroy {
       openedFoldersId = this.nzTree.getExpandedNodeList().map(node => node.key)
     }
     // Création d'un noeud racine
-    let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
     let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);
 
     // Nettoyer l'arbre
-    this.nodes = [localRoot, cloudRoot]
+    if (this._electronService.isElectron) {
+      // En mode electron, on ajoute un 2e noeud racine pour les notes locales
+      let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
+      this.nodes = [localRoot, cloudRoot]
+      let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
+      this.placeInTree(localFolders, localRoot, openedFoldersId, this._notes)
+    }
+    else {
+      // Mode navigateur
+      this.nodes = [cloudRoot]
+    }
     // Pour chaque élément sans racine
-    let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
     let cloudFolders: Folder[] = [{
       uuid: "cloud",
       title: "Mes Documents Cloud",
@@ -151,7 +165,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
       parentFolder: null,
       data: {}
     }]
-    this.placeInTree(localFolders, localRoot, openedFoldersId, this._notes)
     this.placeInTree(cloudFolders, cloudRoot, openedFoldersId, this._cloudNotes)
     console.debug("Fin de la génération de l'arbre")
     this.treeGeneratedSubject.next()

@@ -14,6 +14,7 @@ import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzTypographyModule } from 'ng-zorro-antd/typography';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/AuthInterceptor';
@@ -41,7 +42,8 @@ import { AuthInterceptor } from './interceptors/AuthInterceptor';
     NzInputModule,
     NzFormModule,
     NzModalModule,
-    NzIconModule
+    NzIconModule,
+    NzTypographyModule
   ],
   exports: [
     TranslateModule,

@@ -18,6 +18,9 @@
     (nzOnDrop)="nzEvent($event)"
     [nzBeforeDrop]="beforeDrop">
   </nz-tree>
+  <p *ngIf="!_electronService.isElectron" nz-typography nzType="secondary">
+    Installez NoxuNote sur votre PC pour pouvoir sauvegarder vos notes sur votre disque dur.
+  </p>
   <ng-template #nzTreeTemplate let-node>
     <span 
         [attr.draggable]="node.origin.isRoot?null:true"
