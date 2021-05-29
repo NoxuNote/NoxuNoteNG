@@ -5,11 +5,11 @@ import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
-import { isInDevMode } from '../../../app.constants';
 import { StorageMode } from '../StorageMode';
+import { AppConfig } from '../../../../environments/environment';
 
-let url = isInDevMode() ? "http://127.0.0.1:4455/mynotes/notes/"
-                      : "https://cloud.noxunote.fr/mynotes/notes/"
+let url = AppConfig.production ? "https://cloud.noxunote.fr/mynotes/notes/"
+                               : "http://127.0.0.1:4455/mynotes/notes/"
 
 @Injectable({
   providedIn: 'root'
