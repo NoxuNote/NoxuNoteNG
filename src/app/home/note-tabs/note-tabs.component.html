@@ -7,14 +7,14 @@
 </div> -->
 <div>
   <nz-tabset [(nzSelectedIndex)]="selectedIndex" (nzSelectChange)="tabChange($event)">
-    <nz-tab *ngFor="let tab of tabs ; let i = index" [attr.data-uuid]="tab.savedNote.meta.uuid" [nzTitle]="titleTemplate">
+    <nz-tab *ngFor="let tab of tabs ; let i = index" [attr.data-uuid]="tab.noteUUID" [nzTitle]="titleTemplate">
       <ng-template #titleTemplate>
         <div>
-          {{ tab.savedNote.meta.title }}
+          {{ tab.title }}
           <i nz-icon nzType="close" (click)="handleClose(tab)" class="ant-tabs-close-x"></i>
         </div>
       </ng-template>
-      <app-note-editor [noteUUID]="tab.savedNote.meta.uuid" [storageMode]="tab.savedNote.storageMode"></app-note-editor>
+      <app-note-editor [noteUUID]="tab.noteUUID" [storageMode]="tab.storageMode"></app-note-editor>
     </nz-tab>
   </nz-tabset>
   <div *ngIf="tabs.length==0" class="editorPlaceholder">

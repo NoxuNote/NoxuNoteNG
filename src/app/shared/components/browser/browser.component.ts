@@ -99,19 +99,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._ioS.refreshListFolders(StorageMode.Cloud)
 
     // When the tab manager says the user has changed note tab, update the selected one
-    this.subscribtions.push(this._tmS._editedNoteUuid.subscribe(uuid => {
-      console.debug("selecting " + uuid)
-      this.setSelectedNode(uuid)
-    }))
+    this.subscribtions.push(this._tmS._editedNote.subscribe( note => this.setSelectedNode(note.noteUUID)) )
     // Handle browser service/api requests
-    this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe(() => {
-      this.newFolder(true)
-    }))
-    this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe(() => {
-      this.createNote()
-    }))
+    this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe( () => this.newFolder(true) ))
+    this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe( () => this.createNote() ))
     // Update auth state automatically
-    this._authService.hasSessionCookieObservable.subscribe(cookie => this.hasSessionCookie = cookie)
+    this._authService.hasSessionCookieObservable.subscribe( cookie => this.hasSessionCookie = cookie )
   }
 
   private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]) {
@@ -234,14 +227,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
     return this._notes.find(n => n.uuid == this.selectedNode.key) || this._cloudNotes.find(n => n.uuid == this.selectedNode.key)
   }
 
-  /**
-   * Calls tabsManagerService to open a note
-   * @param uuid Note uuid
-   */
-  openNote(uuid: string, storage: StorageMode) {
-    this._tmS.open(uuid, storage);
-  }
-
   async createNote() {
     var f = this.getSelectedFolder()
     switch (this.selectedNode.origin.storage) {
@@ -263,7 +248,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
           setImmediate(() => {
             this.setSelectedNode(newNote.uuid)
-            this._tmS.open(newNote.uuid, StorageMode.Local)
+            this._tmS.open({title: newNote.title, noteUUID: newNote.uuid, storageMode: StorageMode.Local})
           })
         })
       case StorageMode.Cloud:
@@ -272,7 +257,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
           setImmediate(() => {
             this.setSelectedNode(newNoteCloud.uuid)
-            this._tmS.open(newNoteCloud.uuid, StorageMode.Cloud)
+            this._tmS.open({title: newNote.title, noteUUID: newNote.uuid, storageMode: StorageMode.Cloud})
           })
         })
     }
@@ -337,7 +322,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * @param key node key 
    */
   setSelectedNode(key: string) {
-    console.debug('selection du noeud', key)
     this.selectedNode = this.nzTree?.getTreeNodeByKey(key)
   }
 
@@ -355,7 +339,11 @@ export class BrowserComponent implements OnInit, OnDestroy {
       this.openFolder(data.node)
     } else {
       // Si il s'agit d'une note ou l'ouvre
-      this.openNote(data.node.key, data.node.parentNode.origin.storage)
+      this._tmS.open({
+        title: data.node.parentNode.origin.title, 
+        noteUUID: data.node.key, 
+        storageMode: data.node.parentNode.origin.storage
+      })
     }
   }
 

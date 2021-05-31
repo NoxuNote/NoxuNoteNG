@@ -1,7 +1,11 @@
-import { Note } from "../../types/Note";
+import { StorageMode } from "../io/StorageMode";
 
-export class NoteTab {
+export type NoteTab =  {
  
-  savedNote: Note;
+  title: string
+
+  noteUUID: string
+
+  storageMode: StorageMode
 
 }
