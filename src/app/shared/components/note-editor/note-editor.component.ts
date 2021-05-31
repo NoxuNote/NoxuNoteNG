@@ -1,12 +1,12 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter, OnInit } from '@angular/core';
 import EditorJS, { BlockAPI } from '@editorjs/editorjs';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
 import Underline from '@editorjs/underline';import { Note } from '../../../types/Note';
 import Marker from "@editorjs/marker";
 import { IoService, StorageMode, MathjaxService } from "../../../services";
-import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from "rxjs/operators";
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, first, take } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
@@ -16,7 +16,7 @@ import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
   templateUrl: './note-editor.component.html',
   styleUrls: ['./note-editor.component.scss'],
 })
-export class NoteEditorComponent implements AfterViewInit, OnDestroy {
+export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('container') container: ElementRef;
   @ViewChild('editorJs') editorContainer: ElementRef;
   @ViewChild('mathInput') mathInput: MathInputComponent;
@@ -25,7 +25,10 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    * Input note
    */
   @Input()
-  note: Note
+  noteUUID: string
+
+  @Input()
+  storageMode: StorageMode
 
   /**
    * Editor.js instance
@@ -85,13 +88,45 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    */
   willClose: boolean = false
 
+  /**
+   * The originally opened note (might be outdated)
+   */
+  openedNote: Note
+
+  editorReady = new Subject<void>()
+
   constructor(private _ioS: IoService, private _mjS: MathjaxService, private _nzContextMenuService: NzContextMenuService) { }
+
+  ngOnInit() {
+    // Load EditorJS and the note content in parallel
+    forkJoin({
+      note: this._ioS.getNote(this.storageMode, this.noteUUID).pipe(first()),
+      editor: this.editorReady.asObservable().pipe(first())
+    })
+    .subscribe(async ({note, editor}) => {
+      // When both are ready, refresh editor
+      this.openedNote = note
+      await this.editor.render(note.content as any)
+      this.typeset()
+      this.blocksCount = this.editor.blocks.getBlocksCount()
+      this.editor.on('click', (data)=>console.log(data))
+      // Hide the math input when the editor is clicked
+      this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
+        // If the target is not a mathjax element and math is shown
+        if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
+          this.math.shown = false
+        }
+        // If a contextual menu is open, close it
+        this._nzContextMenuService.close()
+      })
+    })
+    
+  }
 
   ngAfterViewInit() {
     this.editor = new EditorJS({
       holder: this.editorContainer.nativeElement,
       autofocus: false,
-      data: this.note.content as any,
       placeholder: "Cliquez ici et commencez à vous exprimer !",
       inlineToolbar: true,
       tools: {
@@ -110,23 +145,7 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
           inlineToolbar: true
         }
       },
-      /**
-      * onReady callback
-      */
-      onReady: () => {
-        this.typeset()
-        this.blocksCount = this.editor.blocks.getBlocksCount()
-        this.editor.on('click', (data)=>console.log(data))
-        // Hide the math input when the editor is clicked
-        this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
-          // If the target is not a mathjax element and math is shown
-          if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
-            this.math.shown = false
-          }
-          // If a contextual menu is open, close it
-          this._nzContextMenuService.close()
-        })
-      },
+      onReady: () => this.editorReady.next(),
       onChange: () => this.onChange()
     });
     // Once user hasn't changed the note for 3 seconds, save 
@@ -177,10 +196,10 @@ export class NoteEditorComponent implements AfterViewInit, OnDestroy {
    * Asks asynchronously the IOService to save this representation
    */
   async save() {
-    console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.note.meta.title})`);
+    console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.openedNote.meta.title})`);
     let outputData = await this.editor.save()
-    await this._ioS.saveNote({ ...this.note, content: outputData })
-    console.debug(`[AUTOMATIC SAVE] done. (${this.note.meta.title})`)
+    await this._ioS.saveNote({ ...this.openedNote, content: outputData })
+    console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
     this.changesAreSaved = true
   }
 

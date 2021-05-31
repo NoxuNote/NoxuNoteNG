@@ -14,7 +14,7 @@
           <i nz-icon nzType="close" (click)="handleClose(tab)" class="ant-tabs-close-x"></i>
         </div>
       </ng-template>
-      <app-note-editor [note]="tab.savedNote"></app-note-editor>
+      <app-note-editor [noteUUID]="tab.savedNote.meta.uuid" [storageMode]="tab.savedNote.storageMode"></app-note-editor>
     </nz-tab>
   </nz-tabset>
   <div *ngIf="tabs.length==0" class="editorPlaceholder">
