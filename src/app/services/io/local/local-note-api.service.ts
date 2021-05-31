@@ -1,58 +1,52 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, from } from 'rxjs';
+import { Observable, BehaviorSubject, from, of, Subject } from 'rxjs';
 import { ElectronService } from '../../../core/services';
-import { INoteDriver } from '../INoteDriver';
+import { INoteAPI } from '../INoteAPI';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { PathsService } from './paths/paths.service';
 import { JsonConvert, ValueCheckingMode } from "json2typescript";
 import { v4 as uuidv4 } from 'uuid';
 import { StorageMode } from '../StorageMode';
+import { ReactiveFormsModule } from '@angular/forms';
+import { map, mapTo } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
-export class LocalNoteDriverService implements INoteDriver {
-
-  /**
-   * Note contents are nos cached, so you directly read and write them
-   */
-
-  /**
-   * Cache of note metadatas, SHOULD always be un sync with filesystem
-   * because there is no function to write the whole cache to FS
-   */
-  private _listNotesSubject = new BehaviorSubject<NoteMetadata[]>([])
+export class LocalNoteAPIService implements INoteAPI {
 
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
   getListNotes(): Observable<NoteMetadata[]> {
-    return this._listNotesSubject.asObservable()
-  }
-
-  refreshListNotes() {
+    let listNotes = []
+    let listNotesSubject = new Subject<NoteMetadata[]>()
     if (!this._elS.isElectron) return
-    this._listNotesSubject.next([]) // clear subject before updating it
+    listNotesSubject.next([]) // clear subject before updating it
     const fs = this._elS.fs // alias
     const path = this._elS.path // alias
     const notesFolder = this._paS.getNotesFolder()
     // List elements inside notes folder
-    fs.readdir(notesFolder).then((elements: string[]) => {
-      elements.forEach(el => {
+    fs.readdir(notesFolder).then((elements: string[]) => 
+      Promise.all(elements.map( el => {
         // Fetch the metadata file/folder
         const elPath = path.join(notesFolder, el)
-        fs.stat(elPath).then(elStat => {
-          // if the the element is a folder
-          if (elStat.isDirectory()) {
-            // check the metadata file
-            this.getMetaFromJson(path.join(elPath, 'meta.json')).then(meta => {
-              // append the meta to the subject
-              this._listNotesSubject.next(this._listNotesSubject.getValue().concat(meta))
-            }).catch(console.warn)
-          }
-        }).catch(console.error)
-      })
-    }).catch(console.error)
+        return fs.stat(elPath)
+        // if the the element is a folder, read meta.json
+        .then(elStat => {
+          if (elStat.isDirectory()) return this.getMetaFromJson(path.join(elPath, 'meta.json'))
+        })
+        // append the meta to the subject
+        .then(meta => {
+          if (meta)
+          listNotes.push(meta)
+          listNotesSubject.next(listNotes)
+        })
+      }))
+    )
+    .catch(console.error)
+    .finally(() => listNotesSubject.complete())
+    return listNotesSubject.asObservable()
   }
 
   getNote(uuid: string): Observable<Note> {
@@ -69,23 +63,26 @@ export class LocalNoteDriverService implements INoteDriver {
     } as Note )))
   }
   
-  async saveNote(note: Note): Promise<NoteMetadata> {
+  saveNote(note: Note): Observable<NoteMetadata> {
     if (!this._elS.isElectron) return
-    // If folder doesn't exist, create it
     const notePath = this.getNoteFolderPath(note.meta.uuid)
-    if (!this._elS.fs.existsSync(notePath)) {
-      await this._elS.fs.mkdir(notePath)
-    }
-    // Promise union between the 'note writing file promise' and the 'meta.json writing file promise'
-    await Promise.all([
-      this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
-      this.saveMetadata(note.meta)
-    ])
-    console.debug('wrote note content to FS')
-    return note.meta
+    return from(
+      this.createFolderIfNotExists(notePath)
+      .then(() => Promise.all([
+          this._elS.fs.writeJson(this.getNotePath(note.meta.uuid), note.content),
+          this.saveMetadata(note.meta)
+      ]))
+    ).pipe(map(() => note.meta))
   }
 
-  async createNote(title?: string): Promise<NoteMetadata> {
+  async createFolderIfNotExists(path): Promise<void> {
+    let exists = await this._elS.fs.pathExists(path)
+    if (!exists) {
+      return await this._elS.fs.mkdir(path)
+    }
+  }
+
+  createNote(title?: string): Observable<NoteMetadata> {
     if (!this._elS.isElectron) return
     // Note creation
     let meta = Object.assign(new NoteMetadata(), {
@@ -103,47 +100,20 @@ export class LocalNoteDriverService implements INoteDriver {
       storageMode: StorageMode.Local
     }
     // Writing note on disk
-    await this.saveNote(note)
-    return meta
+    return from(this.saveNote(note))
   }
 
-  async saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata> {
+  saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
     if (!this._elS.isElectron) return
-    // Check if the note exist
-    let cache: NoteMetadata[] = this._listNotesSubject.getValue()
-    let isPresent = false
-    cache.forEach((meta, index) => {
-      if (meta.uuid == newMetadata.uuid) {
-        console.debug('meta presente en cache, on update')
-        isPresent = true
-        // Update existing
-        cache[index] = newMetadata
-      }
-    })
-    if (!isPresent) {
-      console.debug('meta non présente en cache, insertion')
-      // Insert new
-      cache = cache.concat(newMetadata)
-    }
-    // Update cache
-    console.debug('emitting nex listNotes value')
-    this._listNotesSubject.next(cache)
-    // Write JSON
-    console.debug('wrote metadata note to FS')
-    await this._elS.fs.writeJson(this.getMetaPath(newMetadata.uuid), this.getJsonFromMeta(newMetadata))
-    return newMetadata
+    return from( 
+      this._elS.fs.writeJson(this.getMetaPath(newMetadata.uuid), this.getJsonFromMeta(newMetadata))
+    ).pipe(map(() => newMetadata))
   }
 
-  async removeNote(n: NoteMetadata): Promise<void> {
+  removeNote(n: NoteMetadata): Observable<void> {
     // Removing folder from disk
     const notePath = this.getNoteFolderPath(n.uuid)
-    await this._elS.fs.emptyDir(notePath)
-    await this._elS.fs.rmdir(notePath)
-    // Mise à jour du cache
-    let currentCache: NoteMetadata[] = this._listNotesSubject.getValue()
-    currentCache.splice(currentCache.indexOf(n), 1)
-    this._listNotesSubject.next(currentCache)
-    return
+    return from( this._elS.fs.emptyDir(notePath).then(() => this._elS.fs.rmdir(notePath)) )
   }
   
   /**

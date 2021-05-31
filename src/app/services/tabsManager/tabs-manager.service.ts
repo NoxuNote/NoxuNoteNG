@@ -1,10 +1,9 @@
-import { Injectable, OnInit } from '@angular/core';
-import { IoService } from '../io/io.service';
-import { StorageMode } from '../io/StorageMode';
+import { Injectable } from '@angular/core';
 import { NoteTab } from './NoteTab';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { Note } from '../../types/Note';
-import { debounce, debounceTime, first } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, merge, Observable, Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { CachedCloudNoteAPIService } from '../io/cloud/cached-cloud-note-api.service';
+import { CachedLocalNoteAPIService } from '../io/local/cached-local-note-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -29,9 +28,13 @@ export class TabsManagerService {
    */
   readonly alreadyOpenedObservable: Observable<NoteTab> = this._alreadyOpened.asObservable()
 
-  constructor(private _ioS: IoService) {
+  constructor(private _cloudNoteAPIService: CachedCloudNoteAPIService,
+              private _localNoteAPIService: CachedLocalNoteAPIService) {
     // When metadatas changes
-    this._ioS.getListNotes(StorageMode.Local).pipe(debounceTime(100)).subscribe(notes => {
+    merge(...[
+      this._cloudNoteAPIService.getListNotes(),
+      this._localNoteAPIService.getListNotes()
+    ]).subscribe(notes => {
       let tabs: NoteTab[] = this._openedNotes.getValue()
       // // Close tabs for notes that have been deleted
       // ==== Functionnality removed because it closes all tabs of other storagemodes ====

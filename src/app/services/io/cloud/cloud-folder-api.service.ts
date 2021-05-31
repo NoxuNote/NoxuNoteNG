@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IFolderDriver } from '../IFolderDriver';
+import { IFolderAPI } from '../IFolderAPI';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Folder } from '../../../types/Folder';
 
@@ -7,7 +7,7 @@ import { Folder } from '../../../types/Folder';
 @Injectable({
   providedIn: 'root'
 })
-export class CloudFolderDriverService implements IFolderDriver {
+export class CloudFolderAPIService implements IFolderAPI {
   // Cache
   private _listFoldersSubject = new BehaviorSubject<Folder[]>([{
     uuid: "cloud",

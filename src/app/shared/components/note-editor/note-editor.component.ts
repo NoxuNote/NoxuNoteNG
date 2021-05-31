@@ -4,12 +4,15 @@ import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
 import Underline from '@editorjs/underline';import { Note } from '../../../types/Note';
 import Marker from "@editorjs/marker";
-import { IoService, StorageMode, MathjaxService } from "../../../services";
+import { StorageMode, MathjaxService } from "../../../services";
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime, first, take } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
+import { CachedLocalNoteAPIService } from '../../../services/io/local/cached-local-note-api.service';
+import { CachedCloudNoteAPIService } from '../../../services/io/cloud/cached-cloud-note-api.service';
+import { INoteAPI } from '../../../services/io/INoteAPI';
 
 @Component({
   selector: 'app-note-editor',
@@ -95,13 +98,28 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   editorReady = new Subject<void>()
 
-  constructor(private _ioS: IoService, private _mjS: MathjaxService, private _nzContextMenuService: NzContextMenuService) { }
+  noteService: INoteAPI
+
+  constructor(
+    private _localNoteAPIService: CachedLocalNoteAPIService, 
+    private _cloudNoteAPIService: CachedCloudNoteAPIService, 
+    private _mjS: MathjaxService, 
+    private _nzContextMenuService: NzContextMenuService
+  ) { }
 
   ngOnInit() {
     // Load EditorJS and the note content in parallel
+    switch (this.storageMode) {
+      case StorageMode.Local:
+        this.noteService = this._localNoteAPIService
+        break;
+      case StorageMode.Cloud:
+        this.noteService = this._cloudNoteAPIService
+        break;
+    }
     forkJoin({
-      note: this._ioS.getNote(this.storageMode, this.noteUUID).pipe(first()),
-      editor: this.editorReady.asObservable().pipe(first())
+      note: this.noteService.getNote(this.noteUUID),
+      editor: this.editorReady.asObservable()
     })
     .subscribe(async ({note, editor}) => {
       // When both are ready, refresh editor
@@ -145,7 +163,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
           inlineToolbar: true
         }
       },
-      onReady: () => this.editorReady.next(),
+      onReady: () => this.editorReady.complete(),
       onChange: () => this.onChange()
     });
     // Once user hasn't changed the note for 3 seconds, save 
@@ -193,12 +211,12 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Asks asynchronously EditorJS to generate a JSON representation of the note
-   * Asks asynchronously the IOService to save this representation
+   * Asks asynchronously the Note service to save this representation
    */
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.openedNote.meta.title})`);
     let outputData = await this.editor.save()
-    await this._ioS.saveNote({ ...this.openedNote, content: outputData })
+    await this.noteService.saveNote({ ...this.openedNote, content: outputData })
     console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
     this.changesAreSaved = true
   }

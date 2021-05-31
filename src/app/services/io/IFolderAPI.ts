@@ -1,7 +1,7 @@
 import { Folder } from "../../types/Folder";
 import { Observable } from "rxjs";
 
-export interface IFolderDriver {
+export interface IFolderAPI {
 
   /**
    * Liste les dossiers disponibles

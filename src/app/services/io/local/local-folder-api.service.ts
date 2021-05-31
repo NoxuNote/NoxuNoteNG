@@ -1,21 +1,23 @@
 import { Injectable } from '@angular/core';
-import { IFolderDriver } from '../IFolderDriver';
+import { IFolderAPI } from '../IFolderAPI';
 import { ElectronService } from '../../../core/services';
 import { PathsService } from './paths/paths.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Folder } from '../../../types/Folder';
 import { JsonConvert, ValueCheckingMode, JsonObject } from 'json2typescript';
 import { v4 as uuidv4 } from 'uuid';
+import { NoteMetadata } from '../../../types/NoteMetadata';
+import { LocalNoteAPIService } from './local-note-api.service';
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class LocalFolderDriverService implements IFolderDriver {
+export class LocalFolderAPIService implements IFolderAPI {
   // Cache
   private _listFoldersSubject = new BehaviorSubject<Folder[]>([])
 
-  constructor(private _elS: ElectronService, private _paS: PathsService) { }
+  constructor(private _elS: ElectronService, private _paS: PathsService, private _localNoteAPIService: LocalNoteAPIService) { }
 
   async createFolder(name: string, parentId?: string): Promise<Folder> {
     let f: Folder = Object.assign(new Folder(), {
@@ -42,6 +44,32 @@ export class LocalFolderDriverService implements IFolderDriver {
     }
     // Mise à jour du cache
     this._listFoldersSubject.next(currentCache)
+  }
+
+  /**
+   * Supprime récursivement un dossier et les notes qu'il contient
+   * @param source Source de donnée
+   * @param folderToRemove Dossier à supprimer
+   * @param noteList Liste CONSTANTE des arrays (copie de la vraie liste qui sera modifiée)
+   * @param folderList Liste CONSTANTE des folderList (même chose)
+   */
+   removeFolderRecursive(folderToRemove: Folder, noteList: NoteMetadata[], folderList: Folder[]) {
+    // Remove sub notes
+    noteList.forEach(n => {
+      if (folderToRemove.noteUUIDs.includes(n.uuid)) {
+        this._localNoteAPIService.removeNote(n)
+      }
+    })
+    // Remove sub folders
+    folderList.forEach((f, index) => {
+      // Si f dossier enfant
+      if (f.parentFolder && f.parentFolder == folderToRemove.uuid) {
+        console.log(`${f.uuid} a pour parent ${folderToRemove.uuid}`);
+        // folderList.splice(index, 1)
+        this.removeFolderRecursive(f, noteList, folderList)
+      }
+    })
+    this.removeFolder(folderToRemove)
   }
 
   removeFolder(f: Folder) {

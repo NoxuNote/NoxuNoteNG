@@ -2,7 +2,7 @@ import { NoteMetadata } from "../../types/NoteMetadata";
 import { Observable } from "rxjs";
 import { Note } from "../../types/Note";
 
-export interface INoteDriver {
+export interface INoteAPI {
 
   /**
    * Liste les notes disponibles
@@ -11,11 +11,6 @@ export interface INoteDriver {
    * Pour rafraîchir la liste des notes, utiliser refreshListNotes()
    */
   getListNotes(): Observable<NoteMetadata[]>
-
-  /**
-   * Rafraîchit la liste des notes en cache
-   */
-  refreshListNotes()
 
   /**
    * Récupère une note
@@ -28,24 +23,24 @@ export interface INoteDriver {
    * Enregistre une note
    * @param note Note à enregistrer
    */
-  saveNote(note: Note): Promise<NoteMetadata>
+  saveNote(note: Note): Observable<NoteMetadata>
 
   /**
    * Enregistre une nouvelle note
    * @param note Note à enregistrer
    */
-  createNote(title?: string): Promise<NoteMetadata>
+  createNote(title?: string): Observable<NoteMetadata>
 
   /**
    * Modifie les métadonnées d'une note
    * @param newMetadata Nouvelles métadonnées
    */
-  saveMetadata(newMetadata: NoteMetadata): Promise<NoteMetadata>
+  saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata>
 
   /**
    * Supprime définitivement unenote
    * @param n Note à supprimer
    */
-  removeNote(n: NoteMetadata): Promise<void>
+  removeNote(n: NoteMetadata): Observable<void>
 
 }
