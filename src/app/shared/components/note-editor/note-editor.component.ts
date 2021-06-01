@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import EditorJS, { BlockAPI } from '@editorjs/editorjs';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
@@ -6,8 +6,8 @@ import Underline from '@editorjs/underline';import { Note } from '../../../types
 import Marker from "@editorjs/marker";
 import { StorageMode, MathjaxService } from "../../../services";
 import { forkJoin, Subject, Subscription } from 'rxjs';
-import { debounceTime, first, take } from "rxjs/operators";
-import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
+import { debounceTime } from "rxjs/operators";
+import { saveCaretPosition, insertNodeAtCursor } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
 import { CachedLocalNoteAPIService } from '../../../services/io/local/cached-local-note-api.service';
@@ -119,7 +119,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     forkJoin({
       note: this.noteService.getNote(this.noteUUID),
-      editor: this.editorReady.asObservable()
+      editor: this.editorReady
     })
     .subscribe(async ({note, editor}) => {
       // When both are ready, refresh editor
@@ -163,7 +163,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
           inlineToolbar: true
         }
       },
-      onReady: () => this.editorReady.complete(),
+      onReady: () => {this.editorReady.next(), this.editorReady.complete()},
       onChange: () => this.onChange()
     });
     // Once user hasn't changed the note for 3 seconds, save 
