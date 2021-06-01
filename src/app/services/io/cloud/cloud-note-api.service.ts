@@ -25,10 +25,11 @@ export class CloudNoteAPIService implements INoteAPI {
   getNote(uuid: string): Observable<Note> {
     let meta = this.http.get<NoteMetadata>(url+uuid)
     let content = this.http.get<string>(url+uuid+"/content").pipe(map(c => JSON.parse(c)))
-    return forkJoin([meta, content]).pipe(map(note => ({
-        meta: note[0], 
-        content: note[1],
-        storageMode: StorageMode.Cloud
+    return forkJoin({ meta, content })
+    .pipe(map(({meta, content}) => ({
+      meta, 
+      content,
+      storageMode: StorageMode.Cloud
       }) 
     ))
   }
