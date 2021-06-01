@@ -92,7 +92,7 @@ export class LocalNoteAPIService implements INoteAPI {
       title: title? title : "Nouvelle Note",
       description: "",
       author: this._elS.os.userInfo().username,
-      lastedit: new Date(),
+      lastEdit: new Date(),
       version: 1,
       data: {}
     })
