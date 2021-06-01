@@ -20,11 +20,9 @@ export class LocalNoteAPIService implements INoteAPI {
 
   getListNotes(): Observable<NoteMetadata[]> {
     // TODO : fix this method before merging /!\
-    return of([])
-
     let listNotes = []
     let listNotesSubject = new Subject<NoteMetadata[]>()
-    if (!this._elS.isElectron) return
+    if (!this._elS.isElectron) return of([])
     listNotesSubject.next([]) // clear subject before updating it
     const fs = this._elS.fs // alias
     const path = this._elS.path // alias
@@ -41,7 +39,7 @@ export class LocalNoteAPIService implements INoteAPI {
         })
         // append the meta to the subject
         .then(meta => {
-          if (meta)
+          if (!meta) return 
           listNotes.push(meta)
           listNotesSubject.next(listNotes)
         })
@@ -49,6 +47,7 @@ export class LocalNoteAPIService implements INoteAPI {
     )
     .catch(console.error)
     .finally(() => listNotesSubject.complete())
+    return listNotesSubject.asObservable()
   }
 
   getNote(uuid: string): Observable<Note> {
