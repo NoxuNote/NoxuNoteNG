@@ -216,9 +216,10 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.openedNote.meta.title})`);
     let outputData = await this.editor.save()
-    await this.noteService.saveNote({ ...this.openedNote, content: outputData })
-    console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
-    this.changesAreSaved = true
+    this.noteService.saveNote({ ...this.openedNote, content: outputData }).subscribe(() => {
+      console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
+      this.changesAreSaved = true
+    })
   }
 
 
