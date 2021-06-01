@@ -6,7 +6,7 @@ import Underline from '@editorjs/underline';import { Note } from '../../../types
 import Marker from "@editorjs/marker";
 import { StorageMode, MathjaxService } from "../../../services";
 import { forkJoin, Subject, Subscription } from 'rxjs';
-import { debounceTime } from "rxjs/operators";
+import { debounceTime, delay } from "rxjs/operators";
 import { saveCaretPosition, insertNodeAtCursor } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
@@ -124,13 +124,16 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     .subscribe(async ({note, editor}) => {
       // When both are ready, refresh editor
       this.openedNote = note
-      if (!note || !note.content) throw new Error("Cannot load note " + this.noteUUID)
+      if (!note.content || note.content["blocks"] == undefined || note.content["blocks"].length == 0) 
+        note.content = {
+          blocks: [{ type: "paragraph", data: { text: "" } }]
+        }
       await this.editor.render(note.content as any)
       this.typeset()
       this.blocksCount = this.editor.blocks.getBlocksCount()
       this.editor.on('click', (data)=>console.log(data))
       // Hide the math input when the editor is clicked
-      this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
+      this.editor.on('mousedown', ($event: MouseEvent) => {
         // If the target is not a mathjax element and math is shown
         if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
           this.math.shown = false
