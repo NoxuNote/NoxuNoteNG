@@ -1,29 +1,31 @@
 import { Injectable, OnInit } from "@angular/core";
-import { Observable } from "rxjs";
+import { BehaviorSubject, interval, Observable, Subject } from "rxjs";
+import { distinctUntilChanged, first, tap } from "rxjs/operators";
 import { Note } from "../../../types/Note";
 import { NoteMetadata } from "../../../types/NoteMetadata";
 import { INoteAPI } from "../INoteAPI";
+import { CachedCloudDatabase } from "./CachedCloudDatabase";
 import { CloudNoteAPIService } from "./cloud-note-api.service";
 
 @Injectable({
   providedIn: 'root'
 })
-export class CachedCloudNoteAPIService implements INoteAPI, OnInit {
+export class CachedCloudNoteAPIService implements INoteAPI {
 
-  constructor(private cloudAPIService: CloudNoteAPIService) { }
+  db = new CachedCloudDatabase()
 
-  // private notes: Subject<Note[]> = new Subject()
+  metadatasSubject = new BehaviorSubject<NoteMetadata[]>([])
 
-  // private setupLocalStorage() {
-  //   localStorage.setItem("cloudNotes", "{}")
-  // }
-
-  ngOnInit(): void {
-    // if (! localStorage.getItem("cloudNotes") ) this.setupLocalStorage()
+  constructor(private cloudAPIService: CloudNoteAPIService) { 
+    this.db.metadatas.toArray().then(notes => this.metadatasSubject.next(notes))
+    interval(10*1000).subscribe(() => this.pullMetadatas())
+    this.pullMetadatas()
   }
 
   getListNotes(): Observable<NoteMetadata[]> {
-    return this.cloudAPIService.getListNotes()
+    return this.metadatasSubject.asObservable().pipe(
+      distinctUntilChanged((x, y) => JSON.stringify(x) == JSON.stringify(y))
+    )
   }
 
   getNote(uuid: string): Observable<Note> {
@@ -40,6 +42,13 @@ export class CachedCloudNoteAPIService implements INoteAPI, OnInit {
   }
   removeNote(n: NoteMetadata): Observable<void> {
     return this.cloudAPIService.removeNote(n)
+  }
+
+  private pullMetadatas() {
+    this.cloudAPIService.getListNotes().subscribe(notes => {
+      this.db.metadatas.bulkAdd(notes)
+      this.metadatasSubject.next(notes)
+    })
   }
 
 }

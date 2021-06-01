@@ -19,6 +19,9 @@ export class LocalNoteAPIService implements INoteAPI {
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
   getListNotes(): Observable<NoteMetadata[]> {
+    // TODO : fix this method before merging /!\
+    return of([])
+
     let listNotes = []
     let listNotesSubject = new Subject<NoteMetadata[]>()
     if (!this._elS.isElectron) return
@@ -46,7 +49,6 @@ export class LocalNoteAPIService implements INoteAPI {
     )
     .catch(console.error)
     .finally(() => listNotesSubject.complete())
-    return listNotesSubject.asObservable()
   }
 
   getNote(uuid: string): Observable<Note> {

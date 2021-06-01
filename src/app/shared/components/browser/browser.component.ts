@@ -90,7 +90,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
                      this._cloudFolderAPIService.getListFolders(), this._cloudAPIService.getListNotes()])
         .pipe(debounceTime(100))
         .subscribe(() => {
-          console.debug("aaaaaaaaaaaaa")
           this.generateTree()
         })
     )
@@ -98,7 +97,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._cloudFolderAPIService.refreshListFolders()
 
     // When the tab manager says the user has changed note tab, update the selected one
-    this.subscribtions.push(this._tmS._editedNote.subscribe( note => this.setSelectedNode(note.noteUUID)) )
+    this.subscribtions.push(this._tmS._editedNote.subscribe( note => { if (note) this.setSelectedNode(note.noteUUID) }) )
     // Handle browser service/api requests
     this.subscribtions.push(this._browserService.askCreateFolderObservable.subscribe( () => this.newFolder(true) ))
     this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe( () => this.createNote() ))

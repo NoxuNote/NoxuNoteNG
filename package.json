@@ -102,6 +102,7 @@
     "@angular/material": "9.0.0",
     "@editorjs/editorjs": "2.19.1",
     "@editorjs/underline": "1.0.0",
+    "dexie": "3.0.3",
     "fs-extra": "8.1.0",
     "json2typescript": "1.2.3",
     "ng-zorro-antd": "^11.4.1",
