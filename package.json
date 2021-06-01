@@ -100,7 +100,7 @@
     "@angular/cdk": "9.0.0",
     "@angular/forms": "^11.2.14",
     "@angular/material": "9.0.0",
-    "@editorjs/editorjs": "2.19.1",
+    "@editorjs/editorjs": "^2.22.0",
     "@editorjs/underline": "1.0.0",
     "@types/lodash": "4.14.170",
     "dexie": "3.0.3",
