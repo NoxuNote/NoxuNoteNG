@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, from, of, Subject } from 'rxjs';
+import { Observable, from, of, Subject } from 'rxjs';
 import { ElectronService } from '../../../core/services';
 import { INoteAPI } from '../INoteAPI';
 import { NoteMetadata } from '../../../types/NoteMetadata';
@@ -8,8 +8,7 @@ import { PathsService } from './paths/paths.service';
 import { JsonConvert, ValueCheckingMode } from "json2typescript";
 import { v4 as uuidv4 } from 'uuid';
 import { StorageMode } from '../StorageMode';
-import { ReactiveFormsModule } from '@angular/forms';
-import { map, mapTo } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -97,11 +96,11 @@ export class LocalNoteAPIService implements INoteAPI {
     })
     let note: Note = {
       meta: meta,
-      content: {},
+      content: {blocks: []},
       storageMode: StorageMode.Local
     }
     // Writing note on disk
-    return from(this.saveNote(note))
+    return this.saveNote(note)
   }
 
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {

@@ -80,7 +80,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Automatically fetch noteList with debounce to prevent generateTree overcalls
     this.subscribtions.push(this._localAPIService.getListNotes().subscribe( metas => this._notes = metas ))
     this.subscribtions.push(this._cloudAPIService.getListNotes().subscribe( metas => this._cloudNotes = metas ))
-    this.updateNoteList()
     // Automatically fetch folder list
     this.subscribtions.push(this._localFolderAPIService.getListFolders().subscribe( folders => this._localFolders = folders ))
     this.subscribtions.push(this._cloudFolderAPIService.getListFolders().subscribe( folders => this._cloudFolders = folders ))
@@ -93,6 +92,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
           this.generateTree()
         })
     )
+    this.updateNoteList()
     this._localFolderAPIService.refreshListFolders()
     this._cloudFolderAPIService.refreshListFolders()
 
@@ -164,13 +164,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.subscribtions.forEach(s => s.unsubscribe())
   }
-
+  
   /**
    * Asks the cache to re-fetch notes metadatas from source
    */
   public updateNoteList() {
-    // this._ioS.refreshListNotes(StorageMode.Local)
-    // this._ioS.refreshListNotes(StorageMode.Cloud)
+    this._localAPIService.refreshListNotes()
   }
 
   /**
@@ -253,7 +252,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
         this.treeGeneratedSubject.pipe(take(1)).subscribe(() => {
           setImmediate(() => {
             this.setSelectedNode(newNoteCloud.uuid)
-            this._tmS.open({title: newNote.title, noteUUID: newNote.uuid, storageMode: StorageMode.Cloud})
+            this._tmS.open({title: newNoteCloud.title, noteUUID: newNoteCloud.uuid, storageMode: StorageMode.Cloud})
           })
         })
     }
@@ -271,10 +270,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
       nzOnOk: () => {
         switch (this.selectedNode.parentNode.origin.storage) {
           case StorageMode.Cloud:
-            this._cloudAPIService.removeNote(note)
+            this._cloudAPIService.removeNote(note).subscribe()
             break;
           case StorageMode.Local:
-            this._localAPIService.removeNote(note)
+            this._localAPIService.removeNote(note).subscribe()
             break;
         }
       },
@@ -305,14 +304,10 @@ export class BrowserComponent implements OnInit, OnDestroy {
         // Updating folder data
         switch (this.selectedNode.parentNode.origin.storage) {
           case StorageMode.Cloud:
-            this._cloudAPIService.saveMetadata(result).subscribe( () => { 
-              // TODO : refresh note list in cache
-            })
+            this._cloudAPIService.saveMetadata(result).subscribe()
             break;
           case StorageMode.Local:
-            this._localAPIService.saveMetadata(result).subscribe( () => { 
-              // TODO : refresh note list in cache
-            })
+            this._localAPIService.saveMetadata(result).subscribe()
             break;
         }
       }

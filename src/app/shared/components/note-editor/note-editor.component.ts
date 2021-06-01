@@ -124,6 +124,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     .subscribe(async ({note, editor}) => {
       // When both are ready, refresh editor
       this.openedNote = note
+      if (!note || !note.content) throw new Error("Cannot load note " + this.noteUUID)
       await this.editor.render(note.content as any)
       this.typeset()
       this.blocksCount = this.editor.blocks.getBlocksCount()

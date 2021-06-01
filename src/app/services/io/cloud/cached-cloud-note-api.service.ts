@@ -72,6 +72,7 @@ export class CachedCloudNoteAPIService implements INoteAPI {
 
   createNote(title?: string): Observable<NoteMetadata> {
     return this.cloudAPIService.createNote(title)
+    .pipe(tap(() => this.pullMetadatas()))
   }
 
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
@@ -86,6 +87,7 @@ export class CachedCloudNoteAPIService implements INoteAPI {
 
   removeNote(n: NoteMetadata): Observable<void> {
     return this.cloudAPIService.removeNote(n)
+    .pipe(tap(() => this.pullMetadatas()))
   }
 
   private updateCachedMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
