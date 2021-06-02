@@ -349,7 +349,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
     } else {
       // Si il s'agit d'une note ou l'ouvre
       this._tmS.open({
-        title: data.node.parentNode.origin.title, 
+        title: data.node.origin.title, 
         noteUUID: data.node.key, 
         storageMode: data.node.parentNode.origin.storage
       })
