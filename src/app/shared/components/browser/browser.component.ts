@@ -129,7 +129,9 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Mémoriser quels dossiers étaient ouverts
     let openedFoldersId: string[] = []
     if (this.nzTree) {
-      openedFoldersId = this.nzTree.getExpandedNodeList().map(node => node.key)
+      TreeTools.forEachNode(this.nodes, n => {
+        if (n.expanded) openedFoldersId.push(n.key)
+      })
     }
     // Création d'un noeud racine
     let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);

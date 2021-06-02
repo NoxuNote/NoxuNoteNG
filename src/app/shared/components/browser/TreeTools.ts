@@ -73,4 +73,11 @@ export class TreeTools {
     })
   }
 
+  static forEachNode(tree: NzTreeNodeOptions[], f: (n: NzTreeNodeOptions) => void) {
+    tree.forEach(node => {
+      f(node)
+      this.forEachNode(node.children, f)
+    }) 
+  }
+
 }
