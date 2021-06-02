@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, ComponentFactoryResolver, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import EditorJS, { BlockAPI } from '@editorjs/editorjs';
 import Paragraph from "./customTools/paragraph";
 import Header from './customTools/header';
@@ -6,8 +6,8 @@ import Underline from '@editorjs/underline';import { Note } from '../../../types
 import Marker from "@editorjs/marker";
 import { StorageMode, MathjaxService } from "../../../services";
 import { forkJoin, Subject, Subscription } from 'rxjs';
-import { debounceTime, first, take } from "rxjs/operators";
-import { saveCaretPosition, insertNodeAtCursor, getCaretCoordinates } from "../../../types/staticTools"
+import { debounceTime, delay } from "rxjs/operators";
+import { saveCaretPosition, insertNodeAtCursor } from "../../../types/staticTools"
 import { MathInputComponent } from '../math-input/math-input.component';
 import { NzContextMenuService } from 'ng-zorro-antd/dropdown';
 import { CachedLocalNoteAPIService } from '../../../services/io/local/cached-local-note-api.service';
@@ -119,17 +119,21 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     forkJoin({
       note: this.noteService.getNote(this.noteUUID),
-      editor: this.editorReady.asObservable()
+      editor: this.editorReady
     })
     .subscribe(async ({note, editor}) => {
       // When both are ready, refresh editor
       this.openedNote = note
+      if (!note.content || note.content["blocks"] == undefined || note.content["blocks"].length == 0) 
+        note.content = {
+          blocks: [{ type: "paragraph", data: { text: "" } }]
+        }
       await this.editor.render(note.content as any)
       this.typeset()
       this.blocksCount = this.editor.blocks.getBlocksCount()
       this.editor.on('click', (data)=>console.log(data))
       // Hide the math input when the editor is clicked
-      this.editor.listeners.on(this.editorContainer.nativeElement, 'mousedown', ($event: MouseEvent) => {
+      this.editor.on('mousedown', ($event: MouseEvent) => {
         // If the target is not a mathjax element and math is shown
         if (!(<Element> $event.target).tagName.includes('MJX') && this.math.shown) {
           this.math.shown = false
@@ -163,7 +167,7 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
           inlineToolbar: true
         }
       },
-      onReady: () => this.editorReady.complete(),
+      onReady: () => {this.editorReady.next(), this.editorReady.complete()},
       onChange: () => this.onChange()
     });
     // Once user hasn't changed the note for 3 seconds, save 
@@ -216,9 +220,10 @@ export class NoteEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   async save() {
     console.debug(`[AUTOMATIC SAVE] Automatic note saving ... (${this.openedNote.meta.title})`);
     let outputData = await this.editor.save()
-    await this.noteService.saveNote({ ...this.openedNote, content: outputData })
-    console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
-    this.changesAreSaved = true
+    this.noteService.saveNote({ ...this.openedNote, content: outputData }).subscribe(() => {
+      console.debug(`[AUTOMATIC SAVE] done. (${this.openedNote.meta.title})`)
+      this.changesAreSaved = true
+    })
   }
 
 

@@ -27,7 +27,7 @@ export class NoteMetadata {
    * Last edit date, wrote by NoxuNote
    */
   @JsonProperty("lastedit", UTCDateConverter)
-  lastedit: Date = undefined;
+  lastEdit: Date = undefined;
   /**
    * Note version
    */

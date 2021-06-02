@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, from, of, Subject } from 'rxjs';
+import { Observable, from, of, Subject } from 'rxjs';
 import { ElectronService } from '../../../core/services';
 import { INoteAPI } from '../INoteAPI';
 import { NoteMetadata } from '../../../types/NoteMetadata';
@@ -8,8 +8,7 @@ import { PathsService } from './paths/paths.service';
 import { JsonConvert, ValueCheckingMode } from "json2typescript";
 import { v4 as uuidv4 } from 'uuid';
 import { StorageMode } from '../StorageMode';
-import { ReactiveFormsModule } from '@angular/forms';
-import { map, mapTo } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +18,10 @@ export class LocalNoteAPIService implements INoteAPI {
   constructor(private _elS: ElectronService, private _paS: PathsService) { }
 
   getListNotes(): Observable<NoteMetadata[]> {
+    // TODO : fix this method before merging /!\
     let listNotes = []
     let listNotesSubject = new Subject<NoteMetadata[]>()
-    if (!this._elS.isElectron) return
+    if (!this._elS.isElectron) return of([])
     listNotesSubject.next([]) // clear subject before updating it
     const fs = this._elS.fs // alias
     const path = this._elS.path // alias
@@ -38,7 +38,7 @@ export class LocalNoteAPIService implements INoteAPI {
         })
         // append the meta to the subject
         .then(meta => {
-          if (meta)
+          if (!meta) return 
           listNotes.push(meta)
           listNotesSubject.next(listNotes)
         })
@@ -90,17 +90,17 @@ export class LocalNoteAPIService implements INoteAPI {
       title: title? title : "Nouvelle Note",
       description: "",
       author: this._elS.os.userInfo().username,
-      lastedit: new Date(),
+      lastEdit: new Date(),
       version: 1,
       data: {}
     })
     let note: Note = {
       meta: meta,
-      content: {},
+      content: {blocks: []},
       storageMode: StorageMode.Local
     }
     // Writing note on disk
-    return from(this.saveNote(note))
+    return this.saveNote(note)
   }
 
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
