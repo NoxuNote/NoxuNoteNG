@@ -100,11 +100,15 @@ export class CachedCloudNoteAPIService implements INoteAPI {
      return from(this.db.metadatas.put(newMetadata, newMetadata.uuid)).pipe(map(() => newMetadata))
   }
 
+  /**
+   * Get server's metadata
+   */
   private pullMetadatas() {
     if (!navigator.onLine) return
-    this.cloudAPIService.getListNotes().subscribe(notes => {
+    this.cloudAPIService.getListNotes().subscribe(async notes => {
       // Update cache
-      this.db.metadatas.bulkPut(notes)
+      await this.db.metadatas.clear()
+      await this.db.metadatas.bulkPut(notes)
       // Update subject
       this.metadatasSubject.next(notes)
     })
@@ -113,7 +117,6 @@ export class CachedCloudNoteAPIService implements INoteAPI {
   /**
    * Push cached note contents and metadatas updates to server if they are more recent
    * TODO or does not exist
-   * @param serverMetas List of NoteMetadata server has
    */
   private push() {
     // Get last server metadatas to find differences
