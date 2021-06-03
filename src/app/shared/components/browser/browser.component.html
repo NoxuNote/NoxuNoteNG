@@ -10,7 +10,7 @@
     nzNoAnimation
     [nzData]="nodes" 
     [nzSearchValue]="searchValue"
-    [nzSelectedKeys]="selectedNode ? [selectedNode.key] : []"
+    [nzSelectedKeys]="selectedNodeKey ? [selectedNodeKey] : []"
     nzDraggable
     (nzClick)="activateNode($event)"
     (nzContextMenu)="selectNode($event)"
