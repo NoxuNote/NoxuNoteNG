@@ -127,18 +127,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
       // Mode navigateur
       this.nodes = [cloudRoot]
     }
-    // Pour chaque élément sans racine
-    let cloudFolders: Folder[] = [{
-      uuid: "cloud",
-      title: "Mes Documents Cloud",
-      color: "#FFFFFF",
-      description: "",
-      noteUUIDs: this._cloudNotes.map(note => note.uuid),
-      parentFolder: null,
-      data: {}
-    }]
     // Insertion des notes cloud dans le dossier virtuel "Cloud" crée
-    TreeTools.insertChildren(cloudRoot, StorageMode.Cloud, this._cloudFolders, this._cloudNotes, openedFoldersId, [this.selectedNodeKey])
+    TreeTools.insertChildren(cloudRoot, StorageMode.Cloud, this._cloudFolders, this._cloudNotes, openedFoldersId, [this.selectedNodeKey], null, true)
     this.treeGeneratedSubject.next()
   }
 
