@@ -97,7 +97,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this._cloudFolderAPIService.refreshListFolders()
 
     // When the tab manager says the user has changed note tab, update the selected one
-    this.subscribtions.push(this._tmS._editedNote.subscribe( note => { 
+    this.subscribtions.push(this._tmS._editedNote.subscribe( note => {
+      console.debug("update => ", note)
       if (note) this.selectedNodeKey = note.noteUUID
     }) )
     // Handle browser service/api requests
@@ -105,22 +106,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
     this.subscribtions.push(this._browserService.askCreateNoteObservable.subscribe( () => this.createNote() ))
     // Update auth state automatically
     this._authService.hasSessionCookieObservable.subscribe( cookie => this.hasSessionCookie = cookie )
-  }
-
-  private placeInTree(folders: Folder[], root: NzTreeNodeOptions, openedFoldersId: string[], notes: NoteMetadata[]) {
-    folders.forEach((f, index) => {
-      if (!f.parentFolder || f.parentFolder == "") {
-        // Création et insertion du noeud
-        let noRootNode = TreeTools.createFolderNode(f)
-        // Si le noeud était ouvert, on le réouvre
-        noRootNode.expanded = openedFoldersId.includes(noRootNode.key);
-        noRootNode.storage = root.storage
-        root.children.push(noRootNode)
-        // Insertion de ses enfants
-        // console.log("removed ", folders.splice(index, 1));// element is treated, remove it from list
-        TreeTools.insertChildren(noRootNode, f, folders, notes, openedFoldersId)
-      }
-    })
   }
 
   /**
@@ -138,13 +123,12 @@ export class BrowserComponent implements OnInit, OnDestroy {
     // Création d'un noeud racine
     let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);
 
-    // Nettoyer l'arbre
     if (this._electronService.isElectron) {
       // En mode electron, on ajoute un 2e noeud racine pour les notes locales
       let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
       this.nodes = [localRoot, cloudRoot]
-      let localFolders: Folder[] = [...this._localFolders] // copie des dossiers
-      this.placeInTree(localFolders, localRoot, openedFoldersId, this._notes)
+      // Insertion des dossiers et notes locales dans le dossier virtuel "Ce PC" crée
+      TreeTools.insertChildren(localRoot, StorageMode.Local, this._localFolders, this._notes, openedFoldersId)
     }
     else {
       // Mode navigateur
@@ -160,8 +144,8 @@ export class BrowserComponent implements OnInit, OnDestroy {
       parentFolder: null,
       data: {}
     }]
-    this.placeInTree(cloudFolders, cloudRoot, openedFoldersId, this._cloudNotes)
-    console.debug("Fin de la génération de l'arbre")
+    // Insertion des notes cloud dans le dossier virtuel "Cloud" crée
+    TreeTools.insertChildren(cloudRoot, StorageMode.Cloud, this._cloudFolders, this._cloudNotes, openedFoldersId)
     this.treeGeneratedSubject.next()
   }
 

@@ -2,6 +2,7 @@ import { Folder } from "../../../types/Folder"
 import { NoteMetadata } from "../../../types/NoteMetadata"
 import { StorageMode } from "../../../services/io/StorageMode"
 import { NzTreeNodeOptions } from "ng-zorro-antd/tree"
+import _ from "lodash"
 
 export class TreeTools {
 
@@ -45,32 +46,38 @@ export class TreeTools {
     }
   }
 
-  /**
-   * Crée et insère récursivement les folders dans le noeud fourni
-   * @param node Noeud d'arbre
-   * @param folders Liste des dossiers restants à insérer
-   * @param parent Dossier parent (généralement l'appelant)
-   */
-  static insertChildren = (node: NzTreeNodeOptions, parent: Folder, allFolders: Folder[], allNotes: NoteMetadata[], expandedNodelist: string[]) => {
-    // Folder insertion
-    allFolders.forEach((f, index) => {
-      if (f.parentFolder != undefined && f.parentFolder == parent.uuid) {
-        // Création et insertion du noeud
-        let newNode = TreeTools.createFolderNode(f)
-        newNode.storage = node.storage
-        newNode.expanded = expandedNodelist.includes(newNode.key)
-        node.children.push(newNode)
-        // Insertion de ses enfants
-        // allFolders.splice(index, 1) // element is treated, remove it from list
-        TreeTools.insertChildren(newNode, f, allFolders, allNotes, expandedNodelist)
-      }
+/**
+ * Inserts 'childrenFolders' and 'notes' in nzFolder
+ * @param nzFolder NzTreeNode where children will be inserted
+ * @param storageMode nzFolder's storageMode
+ * @param childrenFolders children folder metadatas
+ * @param notes nzFolder and children's notes
+ * @param expandedNodelist a list of currently expanded noteUUID in tree
+ * @param folder nzFolder's metadata, let undefined or null if folder it's an artificially made folder (not a user's folder)
+ */
+  static insertChildren = (
+    nzFolder: NzTreeNodeOptions,
+    storageMode: StorageMode,
+    childrenFolders: Folder[], 
+    notes: NoteMetadata[], 
+    expandedNodelist: string[],
+    folder?: Folder,
+  ) => {
+    // Insert folders that do not have parents and folders that have nzFolder as parent
+    let directChildrenFolder = childrenFolders.filter( f => (!f.parentFolder || f.parentFolder == "") || (f.parentFolder && f.parentFolder == folder?.uuid))
+    directChildrenFolder.forEach( f => {
+      // Création et insertion du noeud
+      let newNode = TreeTools.createFolderNode(f)
+      newNode.storage = storageMode
+      newNode.expanded = expandedNodelist.includes(newNode.key)
+      nzFolder.children.push(newNode)
+      // Insertion de ses enfants
+      TreeTools.insertChildren(newNode, storageMode, _.difference(childrenFolders, directChildrenFolder), notes, expandedNodelist, f)
     })
     // Notes insertion
-    allNotes.forEach(note => {
-      if (parent.noteUUIDs.includes(note.uuid)) {
-        node.children.push(TreeTools.createNoteNode(note))
-      }
-    })
+    notes
+    .filter( n => folder?.noteUUIDs.includes(n.uuid) )
+    .forEach( note => nzFolder.children.push(TreeTools.createNoteNode(note)) )
   }
 
   static forEachNode(tree: NzTreeNodeOptions[], f: (n: NzTreeNodeOptions) => void) {
