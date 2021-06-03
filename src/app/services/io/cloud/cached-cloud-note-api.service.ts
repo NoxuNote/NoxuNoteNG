@@ -9,6 +9,14 @@ import { CloudNoteAPIService } from "./cloud-note-api.service";
 import _ from "lodash"
 import { StorageMode } from "../StorageMode";
 
+/**
+ * Same thing as the Array.filter() method but with an asynchronous predicate
+ */
+export async function asyncFilter<T>(arr: T[], predicate: (elem:T) => Promise<boolean>): Promise<T[]> {
+  const results = await Promise.all(arr.map(predicate));
+  return arr.filter((_v, index) => results[index]);
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -101,16 +109,34 @@ export class CachedCloudNoteAPIService implements INoteAPI {
   }
 
   /**
+   * Get the last pullMetadatas() date registered in localStorage.
+   * Returns `null` if never pulled.
+   */
+  public getLastPullDate(): Date {
+    const lastPullRaw: string = localStorage.getItem("lastCloudPull")
+    if (!lastPullRaw) return null
+    return new Date(lastPullRaw)
+  }
+
+  /**
    * Get server's metadata
    */
   private pullMetadatas() {
     if (!navigator.onLine) return
-    this.cloudAPIService.getListNotes().subscribe(async notes => {
-      // Update cache
-      await this.db.metadatas.clear()
-      await this.db.metadatas.bulkPut(notes)
+    const lastPullDate = this.getLastPullDate()
+    this.cloudAPIService.getListNotes().subscribe(async serverNotes => {
+      // delta are server notes that are not cached or more recent
+      let delta = await asyncFilter(serverNotes, async serverNote => {
+        // Check if cache has a record for this note
+        let cachedNote = await this.db.metadatas.get(serverNote.uuid).catch(() => null)
+        // Keep the server's note if there is no cached note OR
+        // if server's note it is more recent than cache note
+        return ( !cachedNote || new Date(serverNote.lastEdit) > new Date(cachedNote.lastEdit) )
+      })
+      // Refresh cached noteMetadata with delta
+      this.db.metadatas.bulkPut(delta)
       // Update subject
-      this.metadatasSubject.next(notes)
+      this.metadatasSubject.next(serverNotes)
     })
   }
 
