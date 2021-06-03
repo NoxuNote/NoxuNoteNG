@@ -13,6 +13,7 @@
     [nzSelectedKeys]="selectedNodeKey ? [selectedNodeKey] : []"
     nzDraggable
     (nzClick)="activateNode($event)"
+    (nzExpandChange)="nzExpandChange($event)"
     (nzContextMenu)="selectNode($event)"
     [nzTreeTemplate]="nzTreeTemplate"
     (nzOnDrop)="nzEvent($event)"

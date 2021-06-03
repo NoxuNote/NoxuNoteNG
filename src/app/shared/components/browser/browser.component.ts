@@ -112,13 +112,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
    * @param folders Liste des dossiers
    */
   private generateTree() {
-    // Mémoriser quels dossiers étaient ouverts
-    let openedFoldersId: string[] = []
-    if (this.nzTree) {
-      TreeTools.forEachNode(this.nodes, n => {
-        if (n.expanded) openedFoldersId.push(n.key)
-      })
-    }
+    let openedFoldersId: string[] = JSON.parse(localStorage.getItem('expandedFolders')) || []
     // Création d'un noeud racine
     let cloudRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Cloud", "cloud_root", StorageMode.Cloud);
 
@@ -336,6 +330,16 @@ export class BrowserComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Tree's expand change event
+   * - When folder is expanded or closed, save new expanded list in localStorage
+   */
+  nzExpandChange($event: NzFormatEmitEvent) {
+    let openedFoldersId = []
+    // Due to a bug in NgZorro, $event.nodes sometimes not show every opened folders...So we need to find them ourself
+    TreeTools.forEachNode(this.nodes, n => {if (n.expanded) openedFoldersId.push(n.key)})
+    localStorage.setItem('expandedFolders', JSON.stringify(openedFoldersId))
+  }
 
   /***************************************************************************************************
    *                                       FOLDER MODIFICATION                                       *
