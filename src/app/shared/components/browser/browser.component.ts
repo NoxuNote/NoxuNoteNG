@@ -98,7 +98,6 @@ export class BrowserComponent implements OnInit, OnDestroy {
 
     // When the tab manager says the user has changed note tab, update the selected one
     this.subscribtions.push(this._tmS._editedNote.subscribe( note => {
-      console.debug("update => ", note)
       if (note) this.selectedNodeKey = note.noteUUID
     }) )
     // Handle browser service/api requests
@@ -128,7 +127,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
       let localRoot: NzTreeNodeOptions = TreeTools.createCustomFolder("Ce PC", "local_root", StorageMode.Local);
       this.nodes = [localRoot, cloudRoot]
       // Insertion des dossiers et notes locales dans le dossier virtuel "Ce PC" crée
-      TreeTools.insertChildren(localRoot, StorageMode.Local, this._localFolders, this._notes, openedFoldersId)
+      TreeTools.insertChildren(localRoot, StorageMode.Local, this._localFolders, this._notes, openedFoldersId, [this.selectedNodeKey])
     }
     else {
       // Mode navigateur
@@ -145,7 +144,7 @@ export class BrowserComponent implements OnInit, OnDestroy {
       data: {}
     }]
     // Insertion des notes cloud dans le dossier virtuel "Cloud" crée
-    TreeTools.insertChildren(cloudRoot, StorageMode.Cloud, this._cloudFolders, this._cloudNotes, openedFoldersId)
+    TreeTools.insertChildren(cloudRoot, StorageMode.Cloud, this._cloudFolders, this._cloudNotes, openedFoldersId, [this.selectedNodeKey])
     this.treeGeneratedSubject.next()
   }
 

@@ -47,12 +47,13 @@ export class TreeTools {
   }
 
 /**
- * Inserts 'childrenFolders' and 'notes' in nzFolder
+ * Inserts recursively 'childrenFolders' and 'notes' in nzFolder
  * @param nzFolder NzTreeNode where children will be inserted
  * @param storageMode nzFolder's storageMode
  * @param childrenFolders children folder metadatas
  * @param notes nzFolder and children's notes
  * @param expandedNodelist a list of currently expanded noteUUID in tree
+ * @param selectedNodeList a list of currently selected node key in tree
  * @param folder nzFolder's metadata, let undefined or null if folder it's an artificially made folder (not a user's folder)
  */
   static insertChildren = (
@@ -61,6 +62,7 @@ export class TreeTools {
     childrenFolders: Folder[], 
     notes: NoteMetadata[], 
     expandedNodelist: string[],
+    selectedNodeList: string[],
     folder?: Folder,
   ) => {
     // Insert folders that do not have parents and folders that have nzFolder as parent
@@ -70,14 +72,19 @@ export class TreeTools {
       let newNode = TreeTools.createFolderNode(f)
       newNode.storage = storageMode
       newNode.expanded = expandedNodelist.includes(newNode.key)
+      newNode.selected = selectedNodeList.includes(newNode.key)
       nzFolder.children.push(newNode)
       // Insertion de ses enfants
-      TreeTools.insertChildren(newNode, storageMode, _.difference(childrenFolders, directChildrenFolder), notes, expandedNodelist, f)
+      TreeTools.insertChildren(newNode, storageMode, _.difference(childrenFolders, directChildrenFolder), notes, expandedNodelist, selectedNodeList, f)
     })
     // Notes insertion
     notes
     .filter( n => folder?.noteUUIDs.includes(n.uuid) )
-    .forEach( note => nzFolder.children.push(TreeTools.createNoteNode(note)) )
+    .forEach( note => {
+      let noteNode = TreeTools.createNoteNode(note)
+      noteNode.selected = selectedNodeList.includes(note.uuid)
+      nzFolder.children.push(noteNode) 
+    })
   }
 
   static forEachNode(tree: NzTreeNodeOptions[], f: (n: NzTreeNodeOptions) => void) {
