@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {DomSanitizer,SafeResourceUrl,} from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, } from '@angular/platform-browser';
 import { NzModalRef } from 'ng-zorro-antd/modal';
 import { AppConfig } from '../../../../environments/environment';
 
@@ -12,10 +12,10 @@ export class AuthModalComponent implements OnInit {
 
   loginUrl: SafeResourceUrl;
 
-  constructor(private modal: NzModalRef, private sanitizer:DomSanitizer) {}
+  constructor(private modal: NzModalRef, private sanitizer: DomSanitizer) { }
 
   ngOnInit() {
-    let rawUrl = AppConfig.production ? 'https://cloud.noxunote.fr/' : 'http://127.0.0.1:4455/'
+    let rawUrl = AppConfig.production ? 'https://cloud.noxunote.fr/' : 'http://localhost/'
     this.loginUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
   }
 

@@ -16,9 +16,10 @@ import { NzModalModule } from 'ng-zorro-antd/modal';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { NzButtonModule } from 'ng-zorro-antd/button';
-
+import { NzMessageServiceModule } from "ng-zorro-antd/message";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/AuthInterceptor';
+import { ErrorInterceptor } from './interceptors/ErrorInterceptor';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { AuthInterceptor } from './interceptors/AuthInterceptor';
     NzModalModule,
     NzIconModule,
     NzTypographyModule,
-    NzButtonModule
+    NzButtonModule,
+    NzMessageServiceModule
   ],
   exports: [
     TranslateModule,
@@ -62,6 +64,11 @@ import { AuthInterceptor } from './interceptors/AuthInterceptor';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor ,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor ,
       multi: true
     }
   ]

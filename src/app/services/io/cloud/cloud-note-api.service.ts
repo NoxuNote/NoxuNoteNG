@@ -9,7 +9,7 @@ import { StorageMode } from '../StorageMode';
 import { AppConfig } from '../../../../environments/environment';
 
 let url = AppConfig.production ? "https://cloud.noxunote.fr/mynotes/notes/"
-                               : "http://127.0.0.1:4455/mynotes/notes/"
+                               : "http://localhost/mynotes/notes/"
 
 @Injectable({
   providedIn: 'root'
