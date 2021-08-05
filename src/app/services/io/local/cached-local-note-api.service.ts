@@ -13,7 +13,6 @@ import { LocalNoteAPIService } from "./local-note-api.service"
   
     constructor(private localAPIService: LocalNoteAPIService) { }
 
-
     /**
      * Cache of note metadatas, SHOULD always be un sync with filesystem
      * because there is no function to write the whole cache to FS
@@ -41,6 +40,14 @@ import { LocalNoteAPIService } from "./local-note-api.service"
     createNote(title?: string): Observable<NoteMetadata> {
       return this.localAPIService.createNote(title)
       .pipe(tap(()=>this.refreshListNotes()))
+    }
+
+    importMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
+      return this.localAPIService.importMetadata(newMetadata)
+    }
+
+    importNote(newNote: Note): Observable<NoteMetadata> {
+      return this.localAPIService.importNote(newNote)
     }
 
     saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {

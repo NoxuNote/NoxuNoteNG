@@ -103,6 +103,14 @@ export class LocalNoteAPIService implements INoteAPI {
     return this.saveNote(note)
   }
 
+  importMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
+    throw new Error('Method not implemented.');
+  }
+  
+  importNote(newNote: Note): Observable<NoteMetadata> {
+    throw new Error('Method not implemented.');
+  }
+
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
     if (!this._elS.isElectron) return
     return from( 

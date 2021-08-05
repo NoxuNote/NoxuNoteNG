@@ -38,6 +38,18 @@ export interface INoteAPI {
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata>
 
   /**
+   * Crée/ajoute les métadonnées de note fournies en paramètre dans le moyen de stockage
+   * @param newMetadata Nouvelles métadonnées
+   */
+  importMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata>
+
+  /**
+   * Crée/ajoute une note dans le moyen de stockage
+   * @param newMetadata Nouvelles métadonnées
+   */
+  importNote(newNote: Note): Observable<NoteMetadata>
+
+  /**
    * Supprime définitivement unenote
    * @param n Note à supprimer
    */

@@ -4,7 +4,7 @@ import { INoteAPI } from '../INoteAPI';
 import { NoteMetadata } from '../../../types/NoteMetadata';
 import { Note } from '../../../types/Note';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, mergeMap } from 'rxjs/operators';
 import { StorageMode } from '../StorageMode';
 import { AppConfig } from '../../../../environments/environment';
 
@@ -42,6 +42,14 @@ export class CloudNoteAPIService implements INoteAPI {
     return this.http.post<NoteMetadata>(url, title)
   }
   
+  importMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
+    return this.http.post<NoteMetadata>(url+newMetadata.uuid, newMetadata)
+  }
+
+  importNote(newNote: Note): Observable<NoteMetadata> {
+    return this.importMetadata(newNote.meta).pipe( mergeMap(() => this.saveNote(newNote)) )
+  }
+
   saveMetadata(newMetadata: NoteMetadata): Observable<NoteMetadata> {
     return this.http.put<NoteMetadata>(url+newMetadata.uuid, newMetadata)
   }
