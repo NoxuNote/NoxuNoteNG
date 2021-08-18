@@ -173,7 +173,7 @@ export class CachedCloudNoteAPIService implements INoteAPI {
     ]).pipe(flatMap( ([cachedNotes, serverNotes]) => {
       const cachedNotesUuids = cachedNotes.map(n => n.uuid)
       const serverNotesUuids = serverNotes.map(n => n.uuid)
-      const uuids = [ ...new Set([...cachedNotesUuids, ...serverNotes.map(n => n.uuid)]) ]
+      const uuids = [ ...new Set([...cachedNotesUuids, ...serverNotesUuids ]) ]
       if (uuids.length == 0) return of(null)
       return forkJoin(uuids.map(uuid => {
 
